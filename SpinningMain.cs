@@ -65,7 +65,7 @@ namespace SpinningLog
 
 		private void FileCloseMenu_Click(object sender, EventArgs e)
 		{
-			Refresh();
+			throw new Exception("no implement");
 		}
 
 		private void FileCloseAllMenu_Click(object sender, EventArgs e)

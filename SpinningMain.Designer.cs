@@ -185,7 +185,11 @@
 			// 
 			// openFileDialog1
 			// 
-			this.openFileDialog1.FileName = "openFileDialog1";
+			this.openFileDialog1.DefaultExt = "log";
+			this.openFileDialog1.FileName = "*.log";
+			this.openFileDialog1.Filter = "log file(*.log)|*.log|plain text(*.txt)|*.txt|all files(*.*)|*.*";
+			this.openFileDialog1.Multiselect = true;
+			this.openFileDialog1.Title = "add log files";
 			// 
 			// saveFileDialog1
 			// 
