@@ -245,6 +245,9 @@ namespace SpinningLog
 			if (html.Length > 0) {
 				var pre = webBrowser1.Document.GetElementById("merged");
 				pre.InnerHtml += html.ToString();
+
+				// scroll to newest line
+				webBrowser1.Document.Window.ScrollTo(0, pre.ScrollRectangle.Height);
 			}
 		}
 
