@@ -206,7 +206,8 @@ namespace SpinningLog
 
 		List<LogFile> log_files = new List<LogFile>();
 		List<LogLine> merged = new List<LogLine>();
-		string LogFilter = "*.log";
+
+		List<string> LogFilters = new List<string>() { "*.log", "*.txt", /*"*.log.*" */ };
 
 		void Clear()
 		{
@@ -231,7 +232,8 @@ namespace SpinningLog
 		{
 			foreach (string path in files) {
 				if (Directory.Exists(path)) {
-					AddLogFiles(Directory.GetFiles(path, LogFilter, SearchOption.AllDirectories));
+					foreach (string filter in LogFilters)
+						AddLogFiles(Directory.GetFiles(path, filter, SearchOption.AllDirectories));
 				} else if (File.Exists(path)) {
 					if (log_files.Any(l => l.Filename == path))
 						continue;   // ignore already exists
