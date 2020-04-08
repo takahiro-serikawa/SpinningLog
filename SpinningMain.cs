@@ -49,6 +49,26 @@ namespace SpinningLog
 		}
 
 
+		void BlinkLive(DateTime now)
+		{
+			if (log_files.Count > 0 && LiveCheck.Checked) {
+				int v = 255 * now.Millisecond / 1000;
+				LiveCheck.ForeColor = Color.FromArgb(255, 255-v, 255-v);
+			}
+		}
+
+		private void timer1_Tick(object sender, EventArgs e)
+		{
+			var now = DateTime.Now;
+			try {
+				BlinkLive(now);
+
+			} catch (Exception ex) {
+				Debug.WriteLine("timer1_Tick: {0}", ex.Message);
+			}
+		}
+
+
 		// menu handlers
 
 		private void FileNewMenu_Click(object sender, EventArgs e)
@@ -283,6 +303,31 @@ namespace SpinningLog
 				webBrowser1.Document.Window.ScrollTo(0, pre.ScrollRectangle.Height);
 			}
 		}
+
+		#region live update
+		int LiveInterval { get { return LiveTimer.Interval; } set { LiveTimer.Interval = value; } }
+
+		private void LiveTimer_Tick(object sender, EventArgs e)
+		{
+			try {
+				if (LiveCheck.Checked)
+					RefreshMerged();
+
+			} catch (Exception ex) {
+				Debug.WriteLine("LiveTimer: " + ex.Message);
+			}
+		}
+
+		private void LiveCheck_CheckedChanged(object sender, EventArgs e)
+		{
+			if (LiveCheck.Checked) {
+				LiveCheck.Font = new Font(LiveCheck.Font, FontStyle.Bold);
+			} else {
+				LiveCheck.Font = new Font(LiveCheck.Font, FontStyle.Regular);
+				LiveCheck.ForeColor = SystemColors.ControlText;
+			}
+		}
+		#endregion
 
 	}
 }

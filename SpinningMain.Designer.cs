@@ -47,6 +47,8 @@
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
 			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
 			this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+			this.LiveCheck = new System.Windows.Forms.CheckBox();
+			this.LiveTimer = new System.Windows.Forms.Timer(this.components);
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -183,6 +185,12 @@
 			this.HelpAboutMenu.Text = "&About";
 			this.HelpAboutMenu.Click += new System.EventHandler(this.HelpAboutMenu_Click);
 			// 
+			// timer1
+			// 
+			this.timer1.Enabled = true;
+			this.timer1.Interval = 10;
+			this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+			// 
 			// openFileDialog1
 			// 
 			this.openFileDialog1.DefaultExt = "log";
@@ -198,14 +206,34 @@
 			this.saveFileDialog1.Filter = "log file(*.log)|*.log|plain text(*.txt)|*.txt|all files(*.*)|*.*";
 			this.saveFileDialog1.Title = "export merged log";
 			// 
+			// LiveCheck
+			// 
+			this.LiveCheck.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.LiveCheck.AutoSize = true;
+			this.LiveCheck.BackColor = System.Drawing.SystemColors.ControlLightLight;
+			this.LiveCheck.Location = new System.Drawing.Point(723, 4);
+			this.LiveCheck.Name = "LiveCheck";
+			this.LiveCheck.Size = new System.Drawing.Size(48, 19);
+			this.LiveCheck.TabIndex = 2;
+			this.LiveCheck.Text = "LIVE";
+			this.LiveCheck.UseVisualStyleBackColor = false;
+			this.LiveCheck.CheckedChanged += new System.EventHandler(this.LiveCheck_CheckedChanged);
+			// 
+			// LiveTimer
+			// 
+			this.LiveTimer.Enabled = true;
+			this.LiveTimer.Interval = 1000;
+			this.LiveTimer.Tick += new System.EventHandler(this.LiveTimer_Tick);
+			// 
 			// SpinningMain
 			// 
 			this.AllowDrop = true;
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.ClientSize = new System.Drawing.Size(800, 424);
+			this.Controls.Add(this.LiveCheck);
 			this.Controls.Add(this.webBrowser1);
 			this.Controls.Add(this.menuStrip1);
+			this.Font = new System.Drawing.Font("Yu Gothic UI", 9F);
 			this.MainMenuStrip = this.menuStrip1;
 			this.Name = "SpinningMain";
 			this.Text = "spinnin\' log";
@@ -241,6 +269,8 @@
 		private System.Windows.Forms.Timer timer1;
 		private System.Windows.Forms.OpenFileDialog openFileDialog1;
 		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+		private System.Windows.Forms.CheckBox LiveCheck;
+		private System.Windows.Forms.Timer LiveTimer;
 	}
 }
 
