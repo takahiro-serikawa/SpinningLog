@@ -57,7 +57,7 @@
 			this.webBrowser1.Location = new System.Drawing.Point(0, 24);
 			this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
 			this.webBrowser1.Name = "webBrowser1";
-			this.webBrowser1.Size = new System.Drawing.Size(800, 426);
+			this.webBrowser1.Size = new System.Drawing.Size(800, 400);
 			this.webBrowser1.TabIndex = 0;
 			// 
 			// menuStrip1
@@ -184,14 +184,17 @@
 			// 
 			// SpinningMain
 			// 
+			this.AllowDrop = true;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(800, 450);
+			this.ClientSize = new System.Drawing.Size(800, 424);
 			this.Controls.Add(this.webBrowser1);
 			this.Controls.Add(this.menuStrip1);
 			this.MainMenuStrip = this.menuStrip1;
 			this.Name = "SpinningMain";
 			this.Text = "spinnin\' log";
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SpinningMain_FormClosing);
+			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SpinningMain_FormClosed);
 			this.DragDrop += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragDrop);
 			this.DragOver += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragOver);
 			this.menuStrip1.ResumeLayout(false);
