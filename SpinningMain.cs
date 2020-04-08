@@ -10,6 +10,8 @@ using System.Windows.Forms;
 
 using System.IO;
 using System.Diagnostics;
+using System.Web;   // add ref. "System.Web"
+using System.Text.RegularExpressions;
 
 namespace SpinningLog
 {
@@ -23,6 +25,17 @@ namespace SpinningLog
 			var dtl = (DefaultTraceListener)Debug.Listeners["Default"];
 			dtl.LogFileName = Path.ChangeExtension(Application.ExecutablePath, "log");
 #endif
+
+			webBrowser1.DocumentText = @"<html>
+<head>
+ <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+ <title>spinnin' log</title>
+<style></style>
+</head>
+<body>
+ <pre id='merged'></pre>
+</body>
+</html>";
 
 		}
 
@@ -49,6 +62,7 @@ namespace SpinningLog
 			//openFileDialog1.FileName = 
 			if (openFileDialog1.ShowDialog() == DialogResult.OK) {
 				AddLogFiles(openFileDialog1.FileNames);
+				RefreshMerged();
 			}
 		}
 
@@ -103,6 +117,7 @@ namespace SpinningLog
 			Cursor.Current = Cursors.WaitCursor;
 			string[] filenames = (string[])e.Data.GetData(DataFormats.FileDrop, false);
 			AddLogFiles(filenames);
+			RefreshMerged();
 		}
 
 
@@ -120,6 +135,51 @@ namespace SpinningLog
 				this.LastPosition = 0;
 
 			}
+
+			// read unread lines
+			public List<LogLine> GetIncrLines()
+			{
+				var lines = new List<LogLine>();
+				using (var stream = new FileStream(this.Filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				using (var reader = new StreamReader(stream, Encoding.UTF8)) {
+					stream.Position = this.LastPosition;
+					while (!reader.EndOfStream) {
+						string s = reader.ReadLine();
+						var line = new LogLine(this, s);
+						lines.Add(line);
+					}
+					this.LastPosition = stream.Position;
+				}
+				return lines;
+			}
+
+			DateTime LastTime;
+			Regex TimeTemplate;
+
+			static Regex[] templates = {
+				new Regex(@"[0-9]+\/[0-9]+\/[0-9]+\s+[0-9]+\:[0-9]+\:[0-9]+(\.[0-9]+)?(\s[AaPp][Mm])?"),	// 2020/03/23 06:00:00.123 PM
+				new Regex(@"[0-9]+\-[0-9]+\-[0-9]+\s+[0-9]+\:[0-9]+\:[0-9]+(\.[0-9]+)?(\s[AaPp][Mm])?"),	// 2020-03-23 06:00:00.123 PM
+				new Regex(@"[0-9]+\/[0-9]+\/[0-9]+\s+[0-9]+\:[0-9]+\:[0-9]+(\.[0-9]+)?"),	// 2020/03/23 06:00:00.123
+				new Regex(@"[0-9]+\-[0-9]+\-[0-9]+\s+[0-9]+\:[0-9]+\:[0-9]+(\.[0-9]+)?"),	// 2020-03-23 06:00:00.123
+			};
+
+			public DateTime GetTimeFrom(string text)
+			{
+				if (TimeTemplate == null) {
+					foreach (var regex in templates) {
+						var match = regex.Match(text);
+						if (match.Success && DateTime.TryParse(match.Value, out LastTime)) {
+							TimeTemplate = regex;
+							break;
+						}
+					}
+				} else {
+					var match = TimeTemplate.Match(text);
+					if (match.Success)
+						DateTime.TryParse(match.Value, out LastTime);
+				}
+				return this.LastTime;
+			}
 		}
 
 		class LogLine
@@ -132,7 +192,7 @@ namespace SpinningLog
 			{
 				this.LogFile = log;
 				this.Text = text;
-				//this.Time = log.GetTimeFrom(Text);
+				this.Time = log.GetTimeFrom(Text);
 			}
 		}
 
@@ -149,8 +209,45 @@ namespace SpinningLog
 					if (log_files.Any(l => l.Filename == path))
 						continue;   // ignore already exists
 					log_files.Add(new LogFile(path));
+					Console.WriteLine("add file: {0}", path);
 				} else
-					Debug.WriteLine("no file: {0}", path);
+					Console.WriteLine("no file: {0}", path);
+			}
+		}
+
+		void RefreshMerged()
+		{
+			var group = new List<List<LogLine>>();
+			foreach (var log in log_files) {
+				List<LogLine> lines = log.GetIncrLines();
+				if (lines.Count > 0)
+					group.Add(lines);
+			}
+
+			var html = new StringBuilder(1000*1000);
+			while (group.Count > 0) {
+				var top = group[0];
+				foreach (var g in group)
+					if (top[0].Time > g[0].Time)
+						top = g;
+
+				LogLine line = top[0];
+				top.RemoveAt(0);
+				if (top.Count <= 0)
+					group.Remove(top);
+
+				string text = line.Text;
+				text = text.Replace('\0', ' ').TrimEnd();
+				text = HttpUtility.HtmlEncode(text);
+
+				html.Append(Path.GetFileName(line.LogFile.Filename) + ": "
+				 + text + "\n");
+				merged.Add(line);
+			}
+
+			if (html.Length > 0) {
+				var pre = webBrowser1.Document.GetElementById("merged");
+				pre.InnerHtml += html.ToString();
 			}
 		}
 
