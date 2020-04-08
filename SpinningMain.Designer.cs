@@ -187,6 +187,13 @@
 			// 
 			this.openFileDialog1.FileName = "openFileDialog1";
 			// 
+			// saveFileDialog1
+			// 
+			this.saveFileDialog1.DefaultExt = "log";
+			this.saveFileDialog1.FileName = "*.log";
+			this.saveFileDialog1.Filter = "log file(*.log)|*.log|plain text(*.txt)|*.txt|all files(*.*)|*.*";
+			this.saveFileDialog1.Title = "export merged log";
+			// 
 			// SpinningMain
 			// 
 			this.AllowDrop = true;

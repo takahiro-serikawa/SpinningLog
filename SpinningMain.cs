@@ -75,7 +75,11 @@ namespace SpinningLog
 
 		private void FileExportMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			// save merged log files to text file
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK) {
+				var pre = webBrowser1.Document.GetElementById("merged");
+				File.WriteAllText(saveFileDialog1.FileName, pre.InnerText);
+			}
 		}
 
 		private void ViewRefreshMenu_Click(object sender, EventArgs e)
