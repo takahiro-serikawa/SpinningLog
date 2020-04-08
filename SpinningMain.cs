@@ -27,6 +27,8 @@ namespace SpinningLog
 #endif
 
 			var asm = System.Reflection.Assembly.GetExecutingAssembly();
+			var ver = asm.GetName().Version;
+			this.Text = string.Format("{0} ver{1}.{2:D2}", this.Text, ver.Major, ver.Minor);
 
 			// load "empty.html" from resource
 			using (var s = asm.GetManifestResourceStream("SpinningLog.empty.html"))
