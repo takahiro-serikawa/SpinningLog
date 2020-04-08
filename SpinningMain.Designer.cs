@@ -90,6 +90,7 @@
 			// FileNewMenu
 			// 
 			this.FileNewMenu.Name = "FileNewMenu";
+			this.FileNewMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
 			this.FileNewMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileNewMenu.Text = "&New ...";
 			this.FileNewMenu.Click += new System.EventHandler(this.FileNewMenu_Click);
@@ -97,6 +98,7 @@
 			// FileOpenMenu
 			// 
 			this.FileOpenMenu.Name = "FileOpenMenu";
+			this.FileOpenMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
 			this.FileOpenMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileOpenMenu.Text = "&Open ...";
 			this.FileOpenMenu.Click += new System.EventHandler(this.FileOpenMenu_Click);
@@ -104,6 +106,7 @@
 			// FileCloseMenu
 			// 
 			this.FileCloseMenu.Name = "FileCloseMenu";
+			this.FileCloseMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
 			this.FileCloseMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileCloseMenu.Text = "&Close";
 			this.FileCloseMenu.Click += new System.EventHandler(this.FileCloseMenu_Click);
@@ -112,7 +115,7 @@
 			// 
 			this.FileCloseAllMenu.Name = "FileCloseAllMenu";
 			this.FileCloseAllMenu.Size = new System.Drawing.Size(180, 22);
-			this.FileCloseAllMenu.Text = "Close All";
+			this.FileCloseAllMenu.Text = "C&lose All";
 			this.FileCloseAllMenu.Click += new System.EventHandler(this.FileCloseAllMenu_Click);
 			// 
 			// FileExportMenu
@@ -152,6 +155,7 @@
 			// ViewRefreshMenu
 			// 
 			this.ViewRefreshMenu.Name = "ViewRefreshMenu";
+			this.ViewRefreshMenu.ShortcutKeys = System.Windows.Forms.Keys.F5;
 			this.ViewRefreshMenu.Size = new System.Drawing.Size(180, 22);
 			this.ViewRefreshMenu.Text = "&Refresh";
 			this.ViewRefreshMenu.Click += new System.EventHandler(this.ViewRefreshMenu_Click);
@@ -159,6 +163,7 @@
 			// ViewClearMenu
 			// 
 			this.ViewClearMenu.Name = "ViewClearMenu";
+			this.ViewClearMenu.ShortcutKeys = System.Windows.Forms.Keys.F6;
 			this.ViewClearMenu.Size = new System.Drawing.Size(180, 22);
 			this.ViewClearMenu.Text = "&Clear";
 			this.ViewClearMenu.Click += new System.EventHandler(this.ViewClearMenu_Click);
@@ -174,7 +179,7 @@
 			// HelpAboutMenu
 			// 
 			this.HelpAboutMenu.Name = "HelpAboutMenu";
-			this.HelpAboutMenu.Size = new System.Drawing.Size(107, 22);
+			this.HelpAboutMenu.Size = new System.Drawing.Size(180, 22);
 			this.HelpAboutMenu.Text = "&About";
 			this.HelpAboutMenu.Click += new System.EventHandler(this.HelpAboutMenu_Click);
 			// 

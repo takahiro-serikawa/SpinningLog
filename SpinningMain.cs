@@ -65,12 +65,12 @@ namespace SpinningLog
 
 		private void FileCloseMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			Refresh();
 		}
 
 		private void FileCloseAllMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			Clear();
 		}
 
 		private void FileExportMenu_Click(object sender, EventArgs e)
@@ -80,12 +80,12 @@ namespace SpinningLog
 
 		private void ViewRefreshMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			Refresh();
 		}
 
 		private void ViewClearMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
 		}
 
 		private void HelpAboutMenu_Click(object sender, EventArgs e)
@@ -178,6 +178,12 @@ namespace SpinningLog
 				}
 				return this.LastTime;
 			}
+
+			public void Reset()
+			{
+				this.LastPosition = 0;
+				this.LastTime = new DateTime();
+			}
 		}
 
 		class LogLine
@@ -197,6 +203,25 @@ namespace SpinningLog
 		List<LogFile> log_files = new List<LogFile>();
 		List<LogLine> merged = new List<LogLine>();
 		string LogFilter = "*.log";
+
+		void Clear()
+		{
+			// close all files, clear screen
+			log_files.Clear();
+			merged.Clear();
+			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
+		}
+
+		void Refresh()
+		{
+			// reload all files, refresh screen
+			merged.Clear();
+			foreach (var log in log_files)
+				log.Reset();
+
+			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
+			RefreshMerged();
+		}
 
 		void AddLogFiles(string[] files)
 		{
