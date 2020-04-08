@@ -26,16 +26,13 @@ namespace SpinningLog
 			dtl.LogFileName = Path.ChangeExtension(Application.ExecutablePath, "log");
 #endif
 
-			webBrowser1.DocumentText = @"<html>
-<head>
- <meta http-equiv='X-UA-Compatible' content='IE=edge'>
- <title>spinnin' log</title>
-<style></style>
-</head>
-<body>
- <pre id='merged'></pre>
-</body>
-</html>";
+			var asm = System.Reflection.Assembly.GetExecutingAssembly();
+
+			// load "empty.html" from resource
+			using (var s = asm.GetManifestResourceStream("SpinningLog.empty.html"))
+			using (var r = new StreamReader(s, Encoding.UTF8)) {
+				webBrowser1.DocumentText = r.ReadToEnd();
+			}
 
 		}
 
