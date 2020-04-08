@@ -134,16 +134,17 @@ namespace SpinningLog
 			}
 
 			// read unread lines
-			public List<LogLine> GetIncrLines()
+			public Queue<LogLine> GetIncrLinesQ()
+			//public List<LogLine> GetIncrLines()
 			{
-				var lines = new List<LogLine>();
+				var lines = new Queue<LogLine>();
 				using (var stream = new FileStream(this.Filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				using (var reader = new StreamReader(stream, Encoding.UTF8)) {
 					stream.Position = this.LastPosition;
 					while (!reader.EndOfStream) {
 						string s = reader.ReadLine();
 						var line = new LogLine(this, s);
-						lines.Add(line);
+						lines.Enqueue(line);
 					}
 					this.LastPosition = stream.Position;
 				}
@@ -214,9 +215,9 @@ namespace SpinningLog
 
 		void RefreshMerged()
 		{
-			var group = new List<List<LogLine>>();
+			var group = new List<Queue<LogLine>>();
 			foreach (var log in log_files) {
-				List<LogLine> lines = log.GetIncrLines();
+				Queue<LogLine> lines = log.GetIncrLinesQ();
 				if (lines.Count > 0)
 					group.Add(lines);
 			}
@@ -225,11 +226,10 @@ namespace SpinningLog
 			while (group.Count > 0) {
 				var top = group[0];
 				foreach (var g in group)
-					if (top[0].Time > g[0].Time)
+					if (top.Peek().Time > g.Peek().Time)
 						top = g;
 
-				LogLine line = top[0];
-				top.RemoveAt(0);
+				LogLine line = top.Dequeue();
 				if (top.Count <= 0)
 					group.Remove(top);
 
