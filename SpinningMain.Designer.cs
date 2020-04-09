@@ -211,6 +211,8 @@
 			this.LiveCheck.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.LiveCheck.AutoSize = true;
 			this.LiveCheck.BackColor = System.Drawing.SystemColors.ControlLightLight;
+			this.LiveCheck.Checked = true;
+			this.LiveCheck.CheckState = System.Windows.Forms.CheckState.Checked;
 			this.LiveCheck.Location = new System.Drawing.Point(723, 4);
 			this.LiveCheck.Name = "LiveCheck";
 			this.LiveCheck.Size = new System.Drawing.Size(48, 19);

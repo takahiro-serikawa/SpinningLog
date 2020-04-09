@@ -325,7 +325,7 @@ namespace SpinningLog
 
 		void RefreshMerged()
 		{
-			Cursor.Current = Cursors.WaitCursor;
+			int tc0 = Environment.TickCount;
 
 			var group = new List<Queue<LogLine>>();
 			foreach (var log in log_files) {
@@ -336,6 +336,9 @@ namespace SpinningLog
 
 			var html = new StringBuilder(1000*1000);
 			while (group.Count > 0) {
+				if (Environment.TickCount - tc0 > 100)
+					Cursor.Current = Cursors.WaitCursor;
+
 				var top = group[0];
 				foreach (var g in group)
 					if (top.Peek().Time > g.Peek().Time)
@@ -355,6 +358,8 @@ namespace SpinningLog
 			}
 
 			if (html.Length > 0) {
+				Cursor.Current = Cursors.WaitCursor;
+
 				var pre = webBrowser1.Document.GetElementById("merged");
 				pre.InnerHtml += html.ToString();
 
