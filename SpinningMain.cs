@@ -424,11 +424,17 @@ namespace SpinningLog
 
 				var pre = webBrowser1.Document.GetElementById("merged");
 				// 多分ここが遅い
-				pre.InnerHtml += html.ToString();
+				//pre.InnerHtml += html.ToString();
+				var div = webBrowser1.Document.CreateElement("div");
+				div.InnerHtml = html.ToString();
+				div.SetAttribute("className", "flash-effect");
+				pre.InsertAdjacentElement(HtmlElementInsertionOrientation.BeforeEnd, div);
 
 				// scroll to newest line
 				webBrowser1.Document.Window.ScrollTo(0, pre.ScrollRectangle.Height);
 			}
+
+			Cursor.Current = Cursors.Default;
 		}
 
 		#region live update
