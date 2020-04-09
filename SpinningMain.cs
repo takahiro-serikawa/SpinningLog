@@ -370,6 +370,8 @@ namespace SpinningLog
 			return text2;
 		}
 
+		DateTime LastTime = DateTime.MaxValue;
+
 		void RefreshMerged()
 		{
 			int tc0 = Environment.TickCount;
@@ -395,6 +397,15 @@ namespace SpinningLog
 				if (top.Count <= 0)
 					group.Remove(top);
 
+				// insert time span if more than 3000 msec
+				var timespan = line.Time - LastTime;
+				if (timespan.TotalMilliseconds >= 3000) {
+					//html.AppendLine();
+					//html.Append("<HR>");
+					html.Append("<div class=timespan>timespan " + timespan.ToString() + "</div>");
+				}
+				LastTime = line.Time;
+
 				string text = line.Text;
 				text = text.Replace('\0', ' ').TrimEnd();
 				text = HttpUtility.HtmlEncode(text);
@@ -412,6 +423,7 @@ namespace SpinningLog
 				Cursor.Current = Cursors.WaitCursor;
 
 				var pre = webBrowser1.Document.GetElementById("merged");
+				// 多分ここが遅い
 				pre.InnerHtml += html.ToString();
 
 				// scroll to newest line
