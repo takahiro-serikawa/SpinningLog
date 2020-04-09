@@ -46,5 +46,65 @@ namespace SpinningLog.Properties {
                 this["last_open_files"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int win_state {
+            get {
+                return ((int)(this["win_state"]));
+            }
+            set {
+                this["win_state"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int win_left {
+            get {
+                return ((int)(this["win_left"]));
+            }
+            set {
+                this["win_left"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int win_top {
+            get {
+                return ((int)(this["win_top"]));
+            }
+            set {
+                this["win_top"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int win_width {
+            get {
+                return ((int)(this["win_width"]));
+            }
+            set {
+                this["win_width"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int win_height {
+            get {
+                return ((int)(this["win_height"]));
+            }
+            set {
+                this["win_height"] = value;
+            }
+        }
     }
 }

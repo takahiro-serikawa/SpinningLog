@@ -133,11 +133,35 @@ namespace SpinningLog
 			if (!Properties.Settings.Default.valid)
 				Properties.Settings.Default.Upgrade();
 
+			if (Properties.Settings.Default.win_width > 0) {
+				this.StartPosition = FormStartPosition.Manual;
+				this.Left = Properties.Settings.Default.win_left;
+				this.Top = Properties.Settings.Default.win_top;
+				this.Width = Properties.Settings.Default.win_width;
+				this.Height = Properties.Settings.Default.win_height;
+
+				var win_state = (FormWindowState)Properties.Settings.Default.win_state;
+				if (win_state != FormWindowState.Minimized)
+					this.WindowState = win_state;
+			}
 		}
 
 		void SaveSettings()
 		{
 			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(x => x.Filename));
+
+			Properties.Settings.Default.win_state = (int)this.WindowState;
+			if (this.WindowState == FormWindowState.Normal) {
+				Properties.Settings.Default.win_left = this.Left;
+				Properties.Settings.Default.win_top = this.Top;
+				Properties.Settings.Default.win_width = this.Width;
+				Properties.Settings.Default.win_height = this.Height;
+			} else {
+				Properties.Settings.Default.win_left = this.RestoreBounds.Left;
+				Properties.Settings.Default.win_top = this.RestoreBounds.Top;
+				Properties.Settings.Default.win_width = this.RestoreBounds.Width;
+				Properties.Settings.Default.win_height = this.RestoreBounds.Height;
+			}
 
 			Properties.Settings.Default.valid = true;
 			Properties.Settings.Default.Save();
