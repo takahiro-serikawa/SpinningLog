@@ -49,6 +49,7 @@
 			this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
 			this.LiveCheck = new System.Windows.Forms.CheckBox();
 			this.LiveTimer = new System.Windows.Forms.Timer(this.components);
+			this.DropPanel = new System.Windows.Forms.Panel();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -227,14 +228,27 @@
 			this.LiveTimer.Interval = 1000;
 			this.LiveTimer.Tick += new System.EventHandler(this.LiveTimer_Tick);
 			// 
+			// DropPanel
+			// 
+			this.DropPanel.AllowDrop = true;
+			this.DropPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this.DropPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.DropPanel.Location = new System.Drawing.Point(0, 24);
+			this.DropPanel.Name = "DropPanel";
+			this.DropPanel.Size = new System.Drawing.Size(800, 400);
+			this.DropPanel.TabIndex = 3;
+			this.DropPanel.DragDrop += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragDrop);
+			this.DropPanel.DragOver += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragOver);
+			this.DropPanel.DragLeave += new System.EventHandler(this.DropPanel_DragLeave);
+			// 
 			// SpinningMain
 			// 
 			this.AllowDrop = true;
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-			this.BackColor = System.Drawing.Color.Black;
 			this.ClientSize = new System.Drawing.Size(800, 424);
 			this.Controls.Add(this.LiveCheck);
 			this.Controls.Add(this.webBrowser1);
+			this.Controls.Add(this.DropPanel);
 			this.Controls.Add(this.menuStrip1);
 			this.Font = new System.Drawing.Font("Yu Gothic UI", 9F);
 			this.MainMenuStrip = this.menuStrip1;
@@ -274,6 +288,7 @@
 		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
 		private System.Windows.Forms.CheckBox LiveCheck;
 		private System.Windows.Forms.Timer LiveTimer;
+		private System.Windows.Forms.Panel DropPanel;
 	}
 }
 

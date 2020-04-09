@@ -32,12 +32,17 @@ namespace SpinningLog
 
 			var asm = System.Reflection.Assembly.GetExecutingAssembly();
 
-			webBrowser1.DocumentCompleted += (sender, e) => {
+			webBrowser1.DocumentCompleted += (wb, e1) => {
+				// show title and version
 				var ver = asm.GetName().Version;
 				this.Text = string.Format("{0} ver{1}.{2:D2}",
 				  (webBrowser1.DocumentTitle != "") ? webBrowser1.DocumentTitle : this.Text,
 				  ver.Major, ver.Minor);
-				
+
+				webBrowser1.Document.Body.DragOver += (body, e2) => {
+					// panel takes over drag events, webBrowsers is not supported.
+					DropPanel.BringToFront();
+				};
 				RefreshMerged();
 			};
 
@@ -49,6 +54,11 @@ namespace SpinningLog
 
 			ParseCommandLine(Environment.GetCommandLineArgs());
 			RestoreSettings();
+		}
+
+		private void DropPanel_DragLeave(object sender, EventArgs e)
+		{
+			DropPanel.SendToBack();
 		}
 
 		void ParseCommandLine(string[] args)
@@ -435,6 +445,7 @@ namespace SpinningLog
 			}
 
 			Cursor.Current = Cursors.Default;
+			DropPanel.SendToBack();
 		}
 
 		#region live update
