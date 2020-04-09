@@ -222,14 +222,26 @@ namespace SpinningLog
 		class LogFile
 		{
 			public string Filename { get; set; }
+			public Color Color { get; set; }
 
 			public long LastPosition { get; set; }
+
+			static Color[] auto_colors = {
+				Color.Gray, 
+				// 赤・橙・黃・緑・青・藍・紫
+				Color.Red, Color.Orange, Color.Yellow, Color.Lime, Color.Aqua/*, Color.Blue*/, Color.Fuchsia,
+			};
+			static int color_index = 0;
 
 			public LogFile(string filename)
 			{
 				this.Filename = filename;
 				this.LastPosition = 0;
 
+				// assign default color automatically
+				this.Color = auto_colors[color_index];
+				if (++color_index >= auto_colors.Length)
+					color_index = 0;
 			}
 
 			// read unread lines
@@ -370,8 +382,10 @@ namespace SpinningLog
 				text = text.Replace('\0', ' ').TrimEnd();
 				text = HttpUtility.HtmlEncode(text);
 
-				html.Append(Path.GetFileName(line.LogFile.Filename) + ": "
+				html.Append("<label style=color:" + line.LogFile.Color.Name + ">"
+				 + Path.GetFileName(line.LogFile.Filename) + "</label> "
 				 + text + "\n");
+
 				merged.Add(line);
 			}
 
