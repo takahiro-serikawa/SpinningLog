@@ -353,6 +353,23 @@ namespace SpinningLog
 			}
 		}
 
+		List<string> HighlightWords = new List<string>(){
+			"error",
+			"failed", "fail",
+			"cannot", "can not", "can't",
+		};
+
+		static string HightlightHtml(string text, List<string> words)
+		{
+			//return Regex.Replace(text, "(" + string.Join("|", words) + ")",
+			//  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
+			string text2 = Regex.Replace(text, "(" + string.Join("|", words) + ")",
+			  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
+			if (text2 != text)
+				Console.WriteLine("{0} != {1}", text, text2);
+			return text2;
+		}
+
 		void RefreshMerged()
 		{
 			int tc0 = Environment.TickCount;
@@ -381,6 +398,8 @@ namespace SpinningLog
 				string text = line.Text;
 				text = text.Replace('\0', ' ').TrimEnd();
 				text = HttpUtility.HtmlEncode(text);
+
+				text = HightlightHtml(text, HighlightWords);
 
 				html.Append("<label style=color:" + line.LogFile.Color.Name + ">"
 				 + Path.GetFileName(line.LogFile.Filename) + "</label> "
