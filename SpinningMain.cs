@@ -336,13 +336,19 @@ namespace SpinningLog
 		{
 			public LogFile LogFile { get; set; }
 			public string Text { get; set; }
-			public DateTime Time { get; set; }
+			public DateTime Time { get { return raw_time + TimeDifference; } }
+			DateTime raw_time;
+			TimeSpan TimeDifference;
+			public Encoding Encoding;
+
+			public static Encoding DefaultEncoding = Encoding.UTF8;
 
 			public LogLine(LogFile log, string text)
 			{
 				this.LogFile = log;
 				this.Text = text;
-				this.Time = log.GetTimeFrom(Text);
+				this.raw_time = log.GetTimeFrom(Text);
+				this.Encoding = LogLine.DefaultEncoding;
 			}
 		}
 
@@ -395,13 +401,8 @@ namespace SpinningLog
 
 		static string HightlightHtml(string text, List<string> words)
 		{
-			//return Regex.Replace(text, "(" + string.Join("|", words) + ")",
-			//  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
-			string text2 = Regex.Replace(text, "(" + string.Join("|", words) + ")",
+			return Regex.Replace(text, "(" + string.Join("|", words) + ")",
 			  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
-			if (text2 != text)
-				Console.WriteLine("{0} != {1}", text, text2);
-			return text2;
 		}
 
 		DateTime LastTime = DateTime.MaxValue;
@@ -434,9 +435,9 @@ namespace SpinningLog
 				// insert time span if more than 3000 msec
 				var timespan = line.Time - LastTime;
 				if (timespan.TotalMilliseconds >= 3000) {
-					//html.AppendLine();
-					//html.Append("<HR>");
 					html.Append("<div class=timespan>timespan " + timespan.ToString() + "</div>");
+				} else if (timespan.TotalMilliseconds < 0) {
+					html.Append("<div class=goes-back>timespan " + timespan.ToString() + "</div>");
 				}
 				LastTime = line.Time;
 
