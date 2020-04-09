@@ -43,10 +43,38 @@ namespace SpinningLog
 				webBrowser1.DocumentText = r.ReadToEnd();
 			}
 
+			ParseCommandLine(Environment.GetCommandLineArgs());
 			RestoreSettings();
+		}
 
-			string openfiles = Properties.Settings.Default.last_open_files;
-			AddLogFiles(openfiles.Split('|'));
+		void ParseCommandLine(string[] args)
+		{
+			bool opt_new = false;
+			var files = new List<string>();
+			for (int i = 1; i < args.Length; i++)
+				if (args[i][0] == '-') {
+					switch (args[i]) {
+					case "--new":
+						opt_new = true;
+						break;
+
+					case "--file":
+					case "-f":
+						if (++i < args.Length) files.Add(args[i]);
+						break;
+					}
+				} else
+					files.Add(args[i]);
+
+			if (opt_new)
+				;
+			else if (files.Count > 0)
+				AddLogFiles(files);
+			else if (Properties.Settings.Default.last_open_files != "") {
+				string openfiles = Properties.Settings.Default.last_open_files;
+				AddLogFiles(openfiles.Split('|'));
+			}
+			//RefreshMerged(); -> after DocumentComplete()
 		}
 
 		private void SpinningMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -56,9 +84,9 @@ namespace SpinningLog
 
 		private void SpinningMain_FormClosed(object sender, FormClosedEventArgs e)
 		{
-
 			try {
 				SaveSettings();
+				Debug.WriteLine("FormClosed(, {0})", e.CloseReason);
 			} catch (Exception ex) {
 				Debug.WriteLine("FormClosed: " + ex.Message);
 			}
@@ -104,7 +132,7 @@ namespace SpinningLog
 
 		private void FileNewMenu_Click(object sender, EventArgs e)
 		{
-			Process.Start(Application.ExecutablePath);
+			Process.Start(Application.ExecutablePath, "--new");
 		}
 
 		private void FileOpenMenu_Click(object sender, EventArgs e)
@@ -128,7 +156,6 @@ namespace SpinningLog
 
 		private void FileExportMenu_Click(object sender, EventArgs e)
 		{
-			// save merged log files to text file
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK) {
 				var pre = webBrowser1.Document.GetElementById("merged");
 				File.WriteAllText(saveFileDialog1.FileName, pre.InnerText);
@@ -168,7 +195,6 @@ namespace SpinningLog
 
 		private void SpinningMain_DragDrop(object sender, DragEventArgs e)
 		{
-			Cursor.Current = Cursors.WaitCursor;
 			string[] filenames = (string[])e.Data.GetData(DataFormats.FileDrop, false);
 			AddLogFiles(filenames);
 			RefreshMerged();
@@ -281,7 +307,7 @@ namespace SpinningLog
 			RefreshMerged();
 		}
 
-		void AddLogFiles(string[] files)
+		void AddLogFiles(IEnumerable<string> files)
 		{
 			foreach (string path in files) {
 				if (Directory.Exists(path)) {
@@ -299,6 +325,8 @@ namespace SpinningLog
 
 		void RefreshMerged()
 		{
+			Cursor.Current = Cursors.WaitCursor;
+
 			var group = new List<Queue<LogLine>>();
 			foreach (var log in log_files) {
 				Queue<LogLine> lines = log.GetIncrLinesQ();
