@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,8 +11,11 @@ using System.Windows.Forms;
 
 using System.IO;
 using System.Diagnostics;
-using System.Web;   // add ref. "System.Web"
+using System.Web; 
 using System.Text.RegularExpressions;
+
+// add ref. "System.Web"
+// add ref. IWshRuntimeLibrary "Windows Script Host Object Model"
 
 namespace SpinningLog
 {
@@ -98,7 +102,8 @@ namespace SpinningLog
 			if (log_files.Count > 0 && LiveCheck.Checked) {
 				int v = 255 * now.Millisecond / 1000;
 				LiveCheck.ForeColor = Color.FromArgb(255, 255-v, 255-v);
-			}
+			} else
+				LiveCheck.ForeColor = SystemColors.ControlText;
 		}
 
 		private void timer1_Tick(object sender, EventArgs e)
@@ -201,6 +206,17 @@ namespace SpinningLog
 		}
 
 
+		public static string GetTargetPath(string filename)
+		{
+			if (Path.GetExtension(filename) != ".lnk")
+				return filename;
+
+			var shell = new IWshRuntimeLibrary.WshShell();
+			var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filename);
+			return shortcut.TargetPath;
+		}
+
+
 		// log files and lines document class
 
 		class LogFile
@@ -217,11 +233,12 @@ namespace SpinningLog
 			}
 
 			// read unread lines
-			public Queue<LogLine> GetIncrLinesQ()
+			public Queue<LogLine> ReadIncrLinesQ()
 			//public List<LogLine> GetIncrLines()
 			{
 				var lines = new Queue<LogLine>();
-				using (var stream = new FileStream(this.Filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				string filename = GetTargetPath(this.Filename);
+				using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				using (var reader = new StreamReader(stream, Encoding.UTF8)) {
 					stream.Position = this.LastPosition;
 					while (!reader.EndOfStream) {
@@ -310,9 +327,10 @@ namespace SpinningLog
 		void AddLogFiles(IEnumerable<string> files)
 		{
 			foreach (string path in files) {
-				if (Directory.Exists(path)) {
+				string link_to = GetTargetPath(path);
+				if (Directory.Exists(path) || Directory.Exists(link_to)) {
 					foreach (string filter in LogFilters)
-						AddLogFiles(Directory.GetFiles(path, filter, SearchOption.AllDirectories));
+						AddLogFiles(Directory.GetFiles(link_to, filter, SearchOption.AllDirectories));
 				} else if (File.Exists(path)) {
 					if (log_files.Any(l => l.Filename == path))
 						continue;   // ignore already exists
@@ -329,7 +347,7 @@ namespace SpinningLog
 
 			var group = new List<Queue<LogLine>>();
 			foreach (var log in log_files) {
-				Queue<LogLine> lines = log.GetIncrLinesQ();
+				Queue<LogLine> lines = log.ReadIncrLinesQ();
 				if (lines.Count > 0)
 					group.Add(lines);
 			}

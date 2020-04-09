@@ -231,6 +231,7 @@
 			// 
 			this.AllowDrop = true;
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+			this.BackColor = System.Drawing.Color.Black;
 			this.ClientSize = new System.Drawing.Size(800, 424);
 			this.Controls.Add(this.LiveCheck);
 			this.Controls.Add(this.webBrowser1);
