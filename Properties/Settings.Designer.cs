@@ -22,5 +22,29 @@ namespace SpinningLog.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool valid {
+            get {
+                return ((bool)(this["valid"]));
+            }
+            set {
+                this["valid"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string last_open_files {
+            get {
+                return ((string)(this["last_open_files"]));
+            }
+            set {
+                this["last_open_files"] = value;
+            }
+        }
     }
 }

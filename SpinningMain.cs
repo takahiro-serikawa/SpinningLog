@@ -27,8 +27,15 @@ namespace SpinningLog
 #endif
 
 			var asm = System.Reflection.Assembly.GetExecutingAssembly();
-			var ver = asm.GetName().Version;
-			this.Text = string.Format("{0} ver{1}.{2:D2}", this.Text, ver.Major, ver.Minor);
+
+			webBrowser1.DocumentCompleted += (sender, e) => {
+				var ver = asm.GetName().Version;
+				this.Text = string.Format("{0} ver{1}.{2:D2}",
+				  (webBrowser1.DocumentTitle != "") ? webBrowser1.DocumentTitle : this.Text,
+				  ver.Major, ver.Minor);
+				
+				RefreshMerged();
+			};
 
 			// load "empty.html" from resource
 			using (var s = asm.GetManifestResourceStream("SpinningLog.empty.html"))
@@ -36,6 +43,10 @@ namespace SpinningLog
 				webBrowser1.DocumentText = r.ReadToEnd();
 			}
 
+			RestoreSettings();
+
+			string openfiles = Properties.Settings.Default.last_open_files;
+			AddLogFiles(openfiles.Split('|'));
 		}
 
 		private void SpinningMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -46,6 +57,11 @@ namespace SpinningLog
 		private void SpinningMain_FormClosed(object sender, FormClosedEventArgs e)
 		{
 
+			try {
+				SaveSettings();
+			} catch (Exception ex) {
+				Debug.WriteLine("FormClosed: " + ex.Message);
+			}
 		}
 
 
@@ -68,6 +84,21 @@ namespace SpinningLog
 			}
 		}
 
+
+		void RestoreSettings()
+		{
+			if (!Properties.Settings.Default.valid)
+				Properties.Settings.Default.Upgrade();
+
+		}
+
+		void SaveSettings()
+		{
+			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(x => x.Filename));
+
+			Properties.Settings.Default.valid = true;
+			Properties.Settings.Default.Save();
+		}
 
 		// menu handlers
 
