@@ -1,0 +1,47 @@
+﻿<html>
+<head>
+ <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+ <title>spinnin'log</title>
+<style>
+body {
+	margin: 0;
+	padding: 0;
+	color: white;
+	background: black;
+}
+#merged {
+	padding: 1px 7px;
+	margin: 0;
+	font-family: Verdana;
+	height: 100vh;	/* for _DragOver event */
+}
+.highlight {
+	color: fuchsia;
+}
+.timespan {
+	color: black;
+	background: tan;
+	font-size: 90%;
+	text-align: center;
+}
+.goes-back {
+	color: black;
+	background: indigo;
+	font-size: 90%;
+	text-align: center;
+}
+
+.flash-effect {
+	animation: flash 1.7s ease 0;
+}
+@keyframes flash {
+   0% { background-color: #008; }
+ 100% { background-color: #000; }
+}
+</style>
+</head>
+
+<body>
+ <pre id='merged'></pre>
+</body>
+</html>

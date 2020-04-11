@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,8 +11,11 @@ using System.Windows.Forms;
 
 using System.IO;
 using System.Diagnostics;
-using System.Web;   // add ref. "System.Web"
+using System.Web; 
 using System.Text.RegularExpressions;
+
+// add ref. "System.Web"
+// add ref. IWshRuntimeLibrary "Windows Script Host Object Model"
 
 namespace SpinningLog
 {
@@ -28,12 +32,17 @@ namespace SpinningLog
 
 			var asm = System.Reflection.Assembly.GetExecutingAssembly();
 
-			webBrowser1.DocumentCompleted += (sender, e) => {
+			webBrowser1.DocumentCompleted += (wb, e1) => {
+				// show title and version
 				var ver = asm.GetName().Version;
 				this.Text = string.Format("{0} ver{1}.{2:D2}",
 				  (webBrowser1.DocumentTitle != "") ? webBrowser1.DocumentTitle : this.Text,
 				  ver.Major, ver.Minor);
-				
+
+				webBrowser1.Document.Body.DragOver += (body, e2) => {
+					// panel takes over drag events, webBrowsers is not supported.
+					DropPanel.BringToFront();
+				};
 				RefreshMerged();
 			};
 
@@ -45,6 +54,11 @@ namespace SpinningLog
 
 			ParseCommandLine(Environment.GetCommandLineArgs());
 			RestoreSettings();
+		}
+
+		private void DropPanel_DragLeave(object sender, EventArgs e)
+		{
+			DropPanel.SendToBack();
 		}
 
 		void ParseCommandLine(string[] args)
@@ -98,7 +112,8 @@ namespace SpinningLog
 			if (log_files.Count > 0 && LiveCheck.Checked) {
 				int v = 255 * now.Millisecond / 1000;
 				LiveCheck.ForeColor = Color.FromArgb(255, 255-v, 255-v);
-			}
+			} else
+				LiveCheck.ForeColor = SystemColors.ControlText;
 		}
 
 		private void timer1_Tick(object sender, EventArgs e)
@@ -118,11 +133,35 @@ namespace SpinningLog
 			if (!Properties.Settings.Default.valid)
 				Properties.Settings.Default.Upgrade();
 
+			if (Properties.Settings.Default.win_width > 0) {
+				this.StartPosition = FormStartPosition.Manual;
+				this.Left = Properties.Settings.Default.win_left;
+				this.Top = Properties.Settings.Default.win_top;
+				this.Width = Properties.Settings.Default.win_width;
+				this.Height = Properties.Settings.Default.win_height;
+
+				var win_state = (FormWindowState)Properties.Settings.Default.win_state;
+				if (win_state != FormWindowState.Minimized)
+					this.WindowState = win_state;
+			}
 		}
 
 		void SaveSettings()
 		{
 			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(x => x.Filename));
+
+			Properties.Settings.Default.win_state = (int)this.WindowState;
+			if (this.WindowState == FormWindowState.Normal) {
+				Properties.Settings.Default.win_left = this.Left;
+				Properties.Settings.Default.win_top = this.Top;
+				Properties.Settings.Default.win_width = this.Width;
+				Properties.Settings.Default.win_height = this.Height;
+			} else {
+				Properties.Settings.Default.win_left = this.RestoreBounds.Left;
+				Properties.Settings.Default.win_top = this.RestoreBounds.Top;
+				Properties.Settings.Default.win_width = this.RestoreBounds.Width;
+				Properties.Settings.Default.win_height = this.RestoreBounds.Height;
+			}
 
 			Properties.Settings.Default.valid = true;
 			Properties.Settings.Default.Save();
@@ -132,7 +171,7 @@ namespace SpinningLog
 
 		private void FileNewMenu_Click(object sender, EventArgs e)
 		{
-			Process.Start(Application.ExecutablePath);
+			Process.Start(Application.ExecutablePath, "--new");
 		}
 
 		private void FileOpenMenu_Click(object sender, EventArgs e)
@@ -201,27 +240,51 @@ namespace SpinningLog
 		}
 
 
+		public static string GetTargetPath(string filename)
+		{
+			if (Path.GetExtension(filename) != ".lnk")
+				return filename;
+
+			var shell = new IWshRuntimeLibrary.WshShell();
+			var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filename);
+			return shortcut.TargetPath;
+		}
+
+
 		// log files and lines document class
 
 		class LogFile
 		{
 			public string Filename { get; set; }
+			public Color Color { get; set; }
 
 			public long LastPosition { get; set; }
+
+			static Color[] auto_colors = {
+				Color.Gray, 
+				// 赤・橙・黃・緑・青・藍・紫
+				Color.Red, Color.Orange, Color.Yellow, Color.Lime, Color.Aqua/*, Color.Blue*/, Color.Fuchsia,
+			};
+			static int color_index = 0;
 
 			public LogFile(string filename)
 			{
 				this.Filename = filename;
 				this.LastPosition = 0;
 
+				// assign default color automatically
+				this.Color = auto_colors[color_index];
+				if (++color_index >= auto_colors.Length)
+					color_index = 0;
 			}
 
 			// read unread lines
-			public Queue<LogLine> GetIncrLinesQ()
+			public Queue<LogLine> ReadIncrLinesQ()
 			//public List<LogLine> GetIncrLines()
 			{
 				var lines = new Queue<LogLine>();
-				using (var stream = new FileStream(this.Filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				string filename = GetTargetPath(this.Filename);
+				using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				using (var reader = new StreamReader(stream, Encoding.UTF8)) {
 					stream.Position = this.LastPosition;
 					while (!reader.EndOfStream) {
@@ -273,13 +336,19 @@ namespace SpinningLog
 		{
 			public LogFile LogFile { get; set; }
 			public string Text { get; set; }
-			public DateTime Time { get; set; }
+			public DateTime Time { get { return raw_time + TimeDifference; } }
+			DateTime raw_time;
+			TimeSpan TimeDifference;
+			public Encoding Encoding;
+
+			public static Encoding DefaultEncoding = Encoding.UTF8;
 
 			public LogLine(LogFile log, string text)
 			{
 				this.LogFile = log;
 				this.Text = text;
-				this.Time = log.GetTimeFrom(Text);
+				this.raw_time = log.GetTimeFrom(Text);
+				this.Encoding = LogLine.DefaultEncoding;
 			}
 		}
 
@@ -310,9 +379,10 @@ namespace SpinningLog
 		void AddLogFiles(IEnumerable<string> files)
 		{
 			foreach (string path in files) {
-				if (Directory.Exists(path)) {
+				string link_to = GetTargetPath(path);
+				if (Directory.Exists(path) || Directory.Exists(link_to)) {
 					foreach (string filter in LogFilters)
-						AddLogFiles(Directory.GetFiles(path, filter, SearchOption.AllDirectories));
+						AddLogFiles(Directory.GetFiles(link_to, filter, SearchOption.AllDirectories));
 				} else if (File.Exists(path)) {
 					if (log_files.Any(l => l.Filename == path))
 						continue;   // ignore already exists
@@ -323,19 +393,36 @@ namespace SpinningLog
 			}
 		}
 
+		List<string> HighlightWords = new List<string>(){
+			"error",
+			"failed", "fail",
+			"cannot", "can not", "can't",
+		};
+
+		static string HightlightHtml(string text, List<string> words)
+		{
+			return Regex.Replace(text, "(" + string.Join("|", words) + ")",
+			  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
+		}
+
+		DateTime LastTime = DateTime.MaxValue;
+
 		void RefreshMerged()
 		{
-			Cursor.Current = Cursors.WaitCursor;
+			int tc0 = Environment.TickCount;
 
 			var group = new List<Queue<LogLine>>();
 			foreach (var log in log_files) {
-				Queue<LogLine> lines = log.GetIncrLinesQ();
+				Queue<LogLine> lines = log.ReadIncrLinesQ();
 				if (lines.Count > 0)
 					group.Add(lines);
 			}
 
 			var html = new StringBuilder(1000*1000);
 			while (group.Count > 0) {
+				if (Environment.TickCount - tc0 > 100)
+					Cursor.Current = Cursors.WaitCursor;
+
 				var top = group[0];
 				foreach (var g in group)
 					if (top.Peek().Time > g.Peek().Time)
@@ -345,22 +432,45 @@ namespace SpinningLog
 				if (top.Count <= 0)
 					group.Remove(top);
 
+				// insert time span if more than 3000 msec
+				var timespan = line.Time - LastTime;
+				if (timespan.TotalMilliseconds >= 3000) {
+					html.Append("<div class=timespan>timespan " + timespan.ToString() + "</div>");
+				} else if (timespan.TotalMilliseconds < 0) {
+					html.Append("<div class=goes-back>timespan " + timespan.ToString() + "</div>");
+				}
+				LastTime = line.Time;
+
 				string text = line.Text;
 				text = text.Replace('\0', ' ').TrimEnd();
 				text = HttpUtility.HtmlEncode(text);
 
-				html.Append(Path.GetFileName(line.LogFile.Filename) + ": "
+				text = HightlightHtml(text, HighlightWords);
+
+				html.Append("<label style=color:" + line.LogFile.Color.Name + ">"
+				 + Path.GetFileName(line.LogFile.Filename) + "</label> "
 				 + text + "\n");
+
 				merged.Add(line);
 			}
 
 			if (html.Length > 0) {
+				Cursor.Current = Cursors.WaitCursor;
+
 				var pre = webBrowser1.Document.GetElementById("merged");
-				pre.InnerHtml += html.ToString();
+				// 多分ここが遅い
+				//pre.InnerHtml += html.ToString();
+				var div = webBrowser1.Document.CreateElement("div");
+				div.InnerHtml = html.ToString();
+				div.SetAttribute("className", "flash-effect");
+				pre.InsertAdjacentElement(HtmlElementInsertionOrientation.BeforeEnd, div);
 
 				// scroll to newest line
 				webBrowser1.Document.Window.ScrollTo(0, pre.ScrollRectangle.Height);
 			}
+
+			Cursor.Current = Cursors.Default;
+			DropPanel.SendToBack();
 		}
 
 		#region live update

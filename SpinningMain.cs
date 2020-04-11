@@ -196,19 +196,34 @@ namespace SpinningLog
 		private void FileExportMenu_Click(object sender, EventArgs e)
 		{
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK) {
-				var pre = webBrowser1.Document.GetElementById("merged");
-				File.WriteAllText(saveFileDialog1.FileName, pre.InnerText);
+				var merged = webBrowser1.Document.GetElementById("merged");
+				File.WriteAllText(saveFileDialog1.FileName, merged.InnerText);
 			}
 		}
 
 		private void ViewRefreshMenu_Click(object sender, EventArgs e)
 		{
-			Refresh();
+			Reload();
 		}
 
 		private void ViewClearMenu_Click(object sender, EventArgs e)
 		{
 			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
+		}
+
+		private void ViewHomeMenu_Click(object sender, EventArgs e)
+		{
+			LiveCheck.Checked = false;
+
+			webBrowser1.Document.Window.ScrollTo(0, 0);
+		}
+
+		private void ViewEndMenu_Click(object sender, EventArgs e)
+		{
+			LiveCheck.Checked = true;
+
+			var merged = webBrowser1.Document.GetElementById("merged");
+			webBrowser1.Document.Window.ScrollTo(0, merged.ScrollRectangle.Height);
 		}
 
 		private void HelpAboutMenu_Click(object sender, EventArgs e)
@@ -353,7 +368,8 @@ namespace SpinningLog
 		}
 
 		List<LogFile> log_files = new List<LogFile>();
-		List<LogLine> merged = new List<LogLine>();
+		List<LogLine> merged_lines = new List<LogLine>();
+		DateTime LastTime = DateTime.MinValue;
 
 		List<string> LogFilters = new List<string>() { "*.log", "*.txt", /*"*.log.*" */ };
 
@@ -361,14 +377,14 @@ namespace SpinningLog
 		{
 			// close all files, clear screen
 			log_files.Clear();
-			merged.Clear();
+			merged_lines.Clear();
 			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
 		}
 
-		void Refresh()
+		// reload all files
+		void Reload()
 		{
-			// reload all files, refresh screen
-			merged.Clear();
+			merged_lines.Clear();
 			foreach (var log in log_files)
 				log.Reset();
 
@@ -405,10 +421,9 @@ namespace SpinningLog
 			  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
 		}
 
-		DateTime LastTime = DateTime.MaxValue;
-
 		void RefreshMerged()
 		{
+			DropPanel.SendToBack();
 			int tc0 = Environment.TickCount;
 
 			var group = new List<Queue<LogLine>>();
@@ -451,7 +466,7 @@ namespace SpinningLog
 				 + Path.GetFileName(line.LogFile.Filename) + "</label> "
 				 + text + "\n");
 
-				merged.Add(line);
+				merged_lines.Add(line);
 			}
 
 			if (html.Length > 0) {
@@ -474,8 +489,6 @@ namespace SpinningLog
 		}
 
 		#region live update
-		int LiveInterval { get { return LiveTimer.Interval; } set { LiveTimer.Interval = value; } }
-
 		private void LiveTimer_Tick(object sender, EventArgs e)
 		{
 			try {
@@ -490,9 +503,9 @@ namespace SpinningLog
 		private void LiveCheck_CheckedChanged(object sender, EventArgs e)
 		{
 			if (LiveCheck.Checked) {
-				LiveCheck.Font = new Font(LiveCheck.Font, FontStyle.Bold);
+				//LiveCheck.Font = new Font(LiveCheck.Font, FontStyle.Bold);
 			} else {
-				LiveCheck.Font = new Font(LiveCheck.Font, FontStyle.Regular);
+				//LiveCheck.Font = new Font(LiveCheck.Font, FontStyle.Regular);
 				LiveCheck.ForeColor = SystemColors.ControlText;
 			}
 		}
