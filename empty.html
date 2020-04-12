@@ -58,6 +58,22 @@ label {
 </head>
 
 <body>
- <pre id='merged'></pre>
+ <div id='merged'></div>
+
+<script>
+'use strict';
+
+document.onkeyup = function (ev) {
+	switch (ev.which) {
+	case 35: // END
+		window.external.ComCommand('end');
+		break;
+
+	case 36: // HOME
+		window.external.ComCommand('home');
+		break;
+	}
+}
+</script>
 </body>
 </html>

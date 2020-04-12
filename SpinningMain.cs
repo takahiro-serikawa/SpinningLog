@@ -13,6 +13,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Web; 
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 // add ref. "System.Web"
 // add ref. IWshRuntimeLibrary "Windows Script Host Object Model"
@@ -28,10 +29,13 @@ namespace SpinningLog
 			// redirect Debug log to file
 			var dtl = (DefaultTraceListener)Debug.Listeners["Default"];
 			dtl.LogFileName = Path.ChangeExtension(Application.ExecutablePath, "log");
+#else
+			webBrowser1.ScriptErrorsSuppressed = true;
 #endif
 
 			var asm = System.Reflection.Assembly.GetExecutingAssembly();
-
+			
+			webBrowser1.ObjectForScripting = new ComOperation(this);
 			webBrowser1.DocumentCompleted += (wb, e1) => {
 				// show title and version
 				var ver = asm.GetName().Version;
@@ -39,7 +43,7 @@ namespace SpinningLog
 				  (webBrowser1.DocumentTitle != "") ? webBrowser1.DocumentTitle : this.Text,
 				  ver.Major, ver.Minor);
 
-				// panel takes over drag events, webBrowsers is not supported.
+				// panel takes over drag events, WebBrowser is not supported.
 				webBrowser1.Document.Body.DragOver += (body, e2) => {
 					DropPanel.BringToFront();
 				};
@@ -105,20 +109,20 @@ namespace SpinningLog
 		}
 
 
-		void BlinkLive(DateTime now)
+		/*void BlinkLive(DateTime now)
 		{
-			if (log_files.Count > 0 && LiveCheck.Checked) {
+			if (log_files.Count > 0 && LiveMenu.Checked) {
 				int v = 255 * now.Millisecond / 1000;
-				LiveCheck.ForeColor = Color.FromArgb(255, 255-v, 255-v);
+				LiveMenu.ForeColor = Color.FromArgb(255, 255-v, 255-v);
 			} else
-				LiveCheck.ForeColor = SystemColors.ControlText;
-		}
+				LiveMenu.ForeColor = SystemColors.ControlText;
+		}*/
 
 		private void timer1_Tick(object sender, EventArgs e)
 		{
 			var now = DateTime.Now;
 			try {
-				BlinkLive(now);
+				//BlinkLive(now);
 
 			} catch (Exception ex) {
 				Debug.WriteLine("timer1_Tick: {0}", ex.Message);
@@ -209,19 +213,24 @@ namespace SpinningLog
 			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
 		}
 
-		private void ViewHomeMenu_Click(object sender, EventArgs e)
+		public void BackToTopMenu_Click(object sender, EventArgs e)
 		{
-			LiveCheck.Checked = false;
+			LiveMenu.Checked = false;
 
 			webBrowser1.Document.Window.ScrollTo(0, 0);
 		}
 
-		private void ViewEndMenu_Click(object sender, EventArgs e)
+		public void LiveMenu_Click(object sender, EventArgs e)
 		{
-			LiveCheck.Checked = true;
+			LiveMenu.Checked = !LiveMenu.Checked;
 
 			var div = webBrowser1.Document.GetElementById("merged");
 			webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
+		}
+
+		private void LiveMenu_CheckedChanged(object sender, EventArgs e)
+		{
+			Console.WriteLine("LiveMenu.CHecked = {0}", LiveMenu.Checked);
 		}
 
 		private void HelpAboutMenu_Click(object sender, EventArgs e)
@@ -257,6 +266,35 @@ namespace SpinningLog
 			DropPanel.SendToBack();
 		}
 
+		// interface between main form and WebBrowser
+		[ComVisible(true)]
+		public class ComOperation
+		{
+			SpinningMain main;
+
+			public ComOperation(SpinningMain main)
+			{
+				this.main = main;
+			}
+
+			// call from webBrowser1's script
+			public void ComCommand(string command)
+			{
+				switch (command) {
+				case "home":
+					main.BackToTopMenu_Click(null, null); 
+					break;
+				case "end":
+					main.LiveMenu_Click(null, null); 
+					break;
+				}
+			}
+		}
+
+		void CallJavaScript(string funcname, string[] args)
+		{
+			webBrowser1.Document.InvokeScript(funcname, args);
+		}
 
 		public static string GetTargetPath(string filename)
 		{
@@ -503,7 +541,7 @@ namespace SpinningLog
 		private void LiveTimer_Tick(object sender, EventArgs e)
 		{
 			try {
-				if (LiveCheck.Checked)
+				if (LiveMenu.Checked)
 					RefreshMerged();
 
 			} catch (Exception ex) {
@@ -513,11 +551,11 @@ namespace SpinningLog
 
 		private void LiveCheck_CheckedChanged(object sender, EventArgs e)
 		{
-			if (LiveCheck.Checked) {
-				//LiveCheck.Font = new Font(LiveCheck.Font, FontStyle.Bold);
+			if (LiveMenu.Checked) {
+				//LiveMenu.Font = new Font(LiveMenu.Font, FontStyle.Bold);
 			} else {
-				//LiveCheck.Font = new Font(LiveCheck.Font, FontStyle.Regular);
-				LiveCheck.ForeColor = SystemColors.ControlText;
+				//LiveMenu.Font = new Font(LiveMenu.Font, FontStyle.Regular);
+				LiveMenu.ForeColor = SystemColors.ControlText;
 			}
 		}
 		#endregion

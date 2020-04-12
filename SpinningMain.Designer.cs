@@ -47,9 +47,10 @@
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
 			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
 			this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-			this.LiveCheck = new System.Windows.Forms.CheckBox();
 			this.LiveTimer = new System.Windows.Forms.Timer(this.components);
 			this.DropPanel = new System.Windows.Forms.Panel();
+			this.BackToTopMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.LiveMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -150,7 +151,9 @@
 			// 
 			this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ViewRefreshMenu,
-            this.ViewClearMenu});
+            this.ViewClearMenu,
+            this.BackToTopMenu,
+            this.LiveMenu});
 			this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
 			this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
 			this.viewToolStripMenuItem.Text = "&View";
@@ -159,7 +162,7 @@
 			// 
 			this.ViewRefreshMenu.Name = "ViewRefreshMenu";
 			this.ViewRefreshMenu.ShortcutKeys = System.Windows.Forms.Keys.F5;
-			this.ViewRefreshMenu.Size = new System.Drawing.Size(132, 22);
+			this.ViewRefreshMenu.Size = new System.Drawing.Size(180, 22);
 			this.ViewRefreshMenu.Text = "&Refresh";
 			this.ViewRefreshMenu.Click += new System.EventHandler(this.ViewRefreshMenu_Click);
 			// 
@@ -167,7 +170,7 @@
 			// 
 			this.ViewClearMenu.Name = "ViewClearMenu";
 			this.ViewClearMenu.ShortcutKeys = System.Windows.Forms.Keys.F6;
-			this.ViewClearMenu.Size = new System.Drawing.Size(132, 22);
+			this.ViewClearMenu.Size = new System.Drawing.Size(180, 22);
 			this.ViewClearMenu.Text = "&Clear";
 			this.ViewClearMenu.Click += new System.EventHandler(this.ViewClearMenu_Click);
 			// 
@@ -207,21 +210,6 @@
 			this.saveFileDialog1.Filter = "log file(*.log)|*.log|plain text(*.txt)|*.txt|all files(*.*)|*.*";
 			this.saveFileDialog1.Title = "export merged log";
 			// 
-			// LiveCheck
-			// 
-			this.LiveCheck.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.LiveCheck.AutoSize = true;
-			this.LiveCheck.BackColor = System.Drawing.SystemColors.ControlLightLight;
-			this.LiveCheck.Checked = true;
-			this.LiveCheck.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.LiveCheck.Location = new System.Drawing.Point(723, 4);
-			this.LiveCheck.Name = "LiveCheck";
-			this.LiveCheck.Size = new System.Drawing.Size(48, 19);
-			this.LiveCheck.TabIndex = 2;
-			this.LiveCheck.Text = "LIVE";
-			this.LiveCheck.UseVisualStyleBackColor = false;
-			this.LiveCheck.CheckedChanged += new System.EventHandler(this.LiveCheck_CheckedChanged);
-			// 
 			// LiveTimer
 			// 
 			this.LiveTimer.Enabled = true;
@@ -241,12 +229,31 @@
 			this.DropPanel.DragOver += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragOver);
 			this.DropPanel.DragLeave += new System.EventHandler(this.DropPanel_DragLeave);
 			// 
+			// BackToTopMenu
+			// 
+			this.BackToTopMenu.Name = "BackToTopMenu";
+			this.BackToTopMenu.ShortcutKeyDisplayString = "HOME";
+			this.BackToTopMenu.Size = new System.Drawing.Size(180, 22);
+			this.BackToTopMenu.Text = "Back to &Top";
+			this.BackToTopMenu.Click += new System.EventHandler(this.BackToTopMenu_Click);
+			// 
+			// LiveMenu
+			// 
+			this.LiveMenu.Checked = true;
+			this.LiveMenu.CheckOnClick = true;
+			this.LiveMenu.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.LiveMenu.Name = "LiveMenu";
+			this.LiveMenu.ShortcutKeyDisplayString = "END";
+			this.LiveMenu.Size = new System.Drawing.Size(180, 22);
+			this.LiveMenu.Text = "&Live";
+			this.LiveMenu.CheckedChanged += new System.EventHandler(this.LiveMenu_CheckedChanged);
+			this.LiveMenu.Click += new System.EventHandler(this.LiveMenu_Click);
+			// 
 			// SpinningMain
 			// 
 			this.AllowDrop = true;
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.ClientSize = new System.Drawing.Size(800, 424);
-			this.Controls.Add(this.LiveCheck);
 			this.Controls.Add(this.webBrowser1);
 			this.Controls.Add(this.DropPanel);
 			this.Controls.Add(this.menuStrip1);
@@ -287,9 +294,10 @@
 		private System.Windows.Forms.Timer timer1;
 		private System.Windows.Forms.OpenFileDialog openFileDialog1;
 		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-		private System.Windows.Forms.CheckBox LiveCheck;
 		private System.Windows.Forms.Timer LiveTimer;
 		private System.Windows.Forms.Panel DropPanel;
+		private System.Windows.Forms.ToolStripMenuItem BackToTopMenu;
+		private System.Windows.Forms.ToolStripMenuItem LiveMenu;
 	}
 }
 
