@@ -40,8 +40,13 @@
 			this.AppExitMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ViewRefreshMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ViewReloadMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.ViewClearMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.BackToTopMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.LiveMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+			this.TagJumpMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ShowInExplorerMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.HelpAboutMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
@@ -49,8 +54,6 @@
 			this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
 			this.LiveTimer = new System.Windows.Forms.Timer(this.components);
 			this.DropPanel = new System.Windows.Forms.Panel();
-			this.BackToTopMenu = new System.Windows.Forms.ToolStripMenuItem();
-			this.LiveMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -95,50 +98,57 @@
 			// 
 			this.FileNewMenu.Name = "FileNewMenu";
 			this.FileNewMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-			this.FileNewMenu.Size = new System.Drawing.Size(157, 22);
+			this.FileNewMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileNewMenu.Text = "&New ...";
+			this.FileNewMenu.ToolTipText = "SpinningLogをもう一つ開く";
 			this.FileNewMenu.Click += new System.EventHandler(this.FileNewMenu_Click);
 			// 
 			// FileOpenMenu
 			// 
 			this.FileOpenMenu.Name = "FileOpenMenu";
 			this.FileOpenMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-			this.FileOpenMenu.Size = new System.Drawing.Size(157, 22);
+			this.FileOpenMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileOpenMenu.Text = "&Open ...";
+			this.FileOpenMenu.ToolTipText = "ログファイルを追加";
 			this.FileOpenMenu.Click += new System.EventHandler(this.FileOpenMenu_Click);
 			// 
 			// FileCloseMenu
 			// 
+			this.FileCloseMenu.Enabled = false;
 			this.FileCloseMenu.Name = "FileCloseMenu";
 			this.FileCloseMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
-			this.FileCloseMenu.Size = new System.Drawing.Size(157, 22);
+			this.FileCloseMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileCloseMenu.Text = "&Close";
 			this.FileCloseMenu.Click += new System.EventHandler(this.FileCloseMenu_Click);
 			// 
 			// FileCloseAllMenu
 			// 
 			this.FileCloseAllMenu.Name = "FileCloseAllMenu";
-			this.FileCloseAllMenu.Size = new System.Drawing.Size(157, 22);
+			this.FileCloseAllMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileCloseAllMenu.Text = "C&lose All";
+			this.FileCloseAllMenu.ToolTipText = "すべてのログファイルを閉じる";
 			this.FileCloseAllMenu.Click += new System.EventHandler(this.FileCloseAllMenu_Click);
 			// 
 			// FileExportMenu
 			// 
 			this.FileExportMenu.Name = "FileExportMenu";
-			this.FileExportMenu.Size = new System.Drawing.Size(157, 22);
+			this.FileExportMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+			this.FileExportMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileExportMenu.Text = "Export ...";
+			this.FileExportMenu.ToolTipText = "マージしたログをテキストファイルに書き出す";
 			this.FileExportMenu.Click += new System.EventHandler(this.FileExportMenu_Click);
 			// 
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(154, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
 			// 
 			// AppExitMenu
 			// 
 			this.AppExitMenu.Name = "AppExitMenu";
-			this.AppExitMenu.Size = new System.Drawing.Size(157, 22);
+			this.AppExitMenu.Size = new System.Drawing.Size(180, 22);
 			this.AppExitMenu.Text = "e&Xit";
+			this.AppExitMenu.ToolTipText = "終了";
 			this.AppExitMenu.Click += new System.EventHandler(this.AppExitMenu_Click);
 			// 
 			// editToolStripMenuItem
@@ -150,29 +160,78 @@
 			// viewToolStripMenuItem
 			// 
 			this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ViewRefreshMenu,
+            this.ViewReloadMenu,
             this.ViewClearMenu,
             this.BackToTopMenu,
-            this.LiveMenu});
+            this.LiveMenu,
+            this.toolStripMenuItem2,
+            this.TagJumpMenu,
+            this.ShowInExplorerMenu});
 			this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
 			this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
 			this.viewToolStripMenuItem.Text = "&View";
 			// 
-			// ViewRefreshMenu
+			// ViewReloadMenu
 			// 
-			this.ViewRefreshMenu.Name = "ViewRefreshMenu";
-			this.ViewRefreshMenu.ShortcutKeys = System.Windows.Forms.Keys.F5;
-			this.ViewRefreshMenu.Size = new System.Drawing.Size(180, 22);
-			this.ViewRefreshMenu.Text = "&Refresh";
-			this.ViewRefreshMenu.Click += new System.EventHandler(this.ViewRefreshMenu_Click);
+			this.ViewReloadMenu.Name = "ViewReloadMenu";
+			this.ViewReloadMenu.ShortcutKeys = System.Windows.Forms.Keys.F5;
+			this.ViewReloadMenu.Size = new System.Drawing.Size(180, 22);
+			this.ViewReloadMenu.Text = "&Reload All";
+			this.ViewReloadMenu.ToolTipText = "すべてのログファイルを再読み込み";
+			this.ViewReloadMenu.Click += new System.EventHandler(this.ViewReloadMenu_Click);
 			// 
 			// ViewClearMenu
 			// 
 			this.ViewClearMenu.Name = "ViewClearMenu";
 			this.ViewClearMenu.ShortcutKeys = System.Windows.Forms.Keys.F6;
 			this.ViewClearMenu.Size = new System.Drawing.Size(180, 22);
-			this.ViewClearMenu.Text = "&Clear";
+			this.ViewClearMenu.Text = "&Clear Screen";
+			this.ViewClearMenu.ToolTipText = "画面表示のみクリア";
 			this.ViewClearMenu.Click += new System.EventHandler(this.ViewClearMenu_Click);
+			// 
+			// BackToTopMenu
+			// 
+			this.BackToTopMenu.Name = "BackToTopMenu";
+			this.BackToTopMenu.ShortcutKeyDisplayString = "HOME";
+			this.BackToTopMenu.Size = new System.Drawing.Size(180, 22);
+			this.BackToTopMenu.Tag = "";
+			this.BackToTopMenu.Text = "Back to &Top";
+			this.BackToTopMenu.ToolTipText = "先頭行にスクロールして、 LIVE 表示を停止";
+			this.BackToTopMenu.Click += new System.EventHandler(this.BackToTopMenu_Click);
+			// 
+			// LiveMenu
+			// 
+			this.LiveMenu.Checked = true;
+			this.LiveMenu.CheckOnClick = true;
+			this.LiveMenu.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.LiveMenu.Name = "LiveMenu";
+			this.LiveMenu.ShortcutKeyDisplayString = "END";
+			this.LiveMenu.Size = new System.Drawing.Size(180, 22);
+			this.LiveMenu.Text = "&Live";
+			this.LiveMenu.ToolTipText = "ログファイルを監視";
+			this.LiveMenu.CheckedChanged += new System.EventHandler(this.LiveMenu_CheckedChanged);
+			this.LiveMenu.Click += new System.EventHandler(this.LiveMenu_Click);
+			// 
+			// toolStripMenuItem2
+			// 
+			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+			this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
+			// 
+			// TagJumpMenu
+			// 
+			this.TagJumpMenu.Enabled = false;
+			this.TagJumpMenu.Name = "TagJumpMenu";
+			this.TagJumpMenu.Size = new System.Drawing.Size(180, 22);
+			this.TagJumpMenu.Text = "Tag &Jump ...";
+			this.TagJumpMenu.Click += new System.EventHandler(this.TagJumpMenu_Click);
+			// 
+			// ShowInExplorerMenu
+			// 
+			this.ShowInExplorerMenu.Enabled = false;
+			this.ShowInExplorerMenu.Name = "ShowInExplorerMenu";
+			this.ShowInExplorerMenu.Size = new System.Drawing.Size(180, 22);
+			this.ShowInExplorerMenu.Text = "&Explorer ...";
+			this.ShowInExplorerMenu.Click += new System.EventHandler(this.ShowInExplorerMenu_Click);
 			// 
 			// helpToolStripMenuItem
 			// 
@@ -184,9 +243,11 @@
 			// 
 			// HelpAboutMenu
 			// 
+			this.HelpAboutMenu.Enabled = false;
 			this.HelpAboutMenu.Name = "HelpAboutMenu";
-			this.HelpAboutMenu.Size = new System.Drawing.Size(107, 22);
-			this.HelpAboutMenu.Text = "&About";
+			this.HelpAboutMenu.Size = new System.Drawing.Size(180, 22);
+			this.HelpAboutMenu.Text = "&About SpinningLog";
+			this.HelpAboutMenu.ToolTipText = "バージョン情報を表示";
 			this.HelpAboutMenu.Click += new System.EventHandler(this.HelpAboutMenu_Click);
 			// 
 			// timer1
@@ -229,26 +290,6 @@
 			this.DropPanel.DragOver += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragOver);
 			this.DropPanel.DragLeave += new System.EventHandler(this.DropPanel_DragLeave);
 			// 
-			// BackToTopMenu
-			// 
-			this.BackToTopMenu.Name = "BackToTopMenu";
-			this.BackToTopMenu.ShortcutKeyDisplayString = "HOME";
-			this.BackToTopMenu.Size = new System.Drawing.Size(180, 22);
-			this.BackToTopMenu.Text = "Back to &Top";
-			this.BackToTopMenu.Click += new System.EventHandler(this.BackToTopMenu_Click);
-			// 
-			// LiveMenu
-			// 
-			this.LiveMenu.Checked = true;
-			this.LiveMenu.CheckOnClick = true;
-			this.LiveMenu.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.LiveMenu.Name = "LiveMenu";
-			this.LiveMenu.ShortcutKeyDisplayString = "END";
-			this.LiveMenu.Size = new System.Drawing.Size(180, 22);
-			this.LiveMenu.Text = "&Live";
-			this.LiveMenu.CheckedChanged += new System.EventHandler(this.LiveMenu_CheckedChanged);
-			this.LiveMenu.Click += new System.EventHandler(this.LiveMenu_Click);
-			// 
 			// SpinningMain
 			// 
 			this.AllowDrop = true;
@@ -287,7 +328,7 @@
 		private System.Windows.Forms.ToolStripMenuItem AppExitMenu;
 		private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ViewRefreshMenu;
+		private System.Windows.Forms.ToolStripMenuItem ViewReloadMenu;
 		private System.Windows.Forms.ToolStripMenuItem ViewClearMenu;
 		private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem HelpAboutMenu;
@@ -298,6 +339,9 @@
 		private System.Windows.Forms.Panel DropPanel;
 		private System.Windows.Forms.ToolStripMenuItem BackToTopMenu;
 		private System.Windows.Forms.ToolStripMenuItem LiveMenu;
+		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+		private System.Windows.Forms.ToolStripMenuItem TagJumpMenu;
+		private System.Windows.Forms.ToolStripMenuItem ShowInExplorerMenu;
 	}
 }
 

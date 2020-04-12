@@ -109,20 +109,22 @@ namespace SpinningLog
 		}
 
 
-		/*void BlinkLive(DateTime now)
+		void BlinkLive(DateTime now)
 		{
+			var timespan = DateTime.Now - this.LastTime;
+			webBrowser1.Document.GetElementById("latest").InnerHtml = TimeSpanString(timespan);
 			if (log_files.Count > 0 && LiveMenu.Checked) {
-				int v = 255 * now.Millisecond / 1000;
-				LiveMenu.ForeColor = Color.FromArgb(255, 255-v, 255-v);
+				//int v = 255 * now.Millisecond / 1000;
+				//LiveMenu.ForeColor = Color.FromArgb(255, 255-v, 255-v);
 			} else
-				LiveMenu.ForeColor = SystemColors.ControlText;
-		}*/
+				;//LiveMenu.ForeColor = SystemColors.ControlText;
+		}
 
 		private void timer1_Tick(object sender, EventArgs e)
 		{
 			var now = DateTime.Now;
 			try {
-				//BlinkLive(now);
+				BlinkLive(now);
 
 			} catch (Exception ex) {
 				Debug.WriteLine("timer1_Tick: {0}", ex.Message);
@@ -203,7 +205,7 @@ namespace SpinningLog
 			}
 		}
 
-		private void ViewRefreshMenu_Click(object sender, EventArgs e)
+		private void ViewReloadMenu_Click(object sender, EventArgs e)
 		{
 			Reload();
 		}
@@ -231,6 +233,16 @@ namespace SpinningLog
 		private void LiveMenu_CheckedChanged(object sender, EventArgs e)
 		{
 			Console.WriteLine("LiveMenu.CHecked = {0}", LiveMenu.Checked);
+		}
+
+		private void TagJumpMenu_Click(object sender, EventArgs e)
+		{
+			throw new Exception("no implement");
+		}
+
+		private void ShowInExplorerMenu_Click(object sender, EventArgs e)
+		{
+			throw new Exception("no implement");
 		}
 
 		private void HelpAboutMenu_Click(object sender, EventArgs e)
@@ -339,16 +351,21 @@ namespace SpinningLog
 			//public List<LogLine> GetIncrLines()
 			{
 				var lines = new Queue<LogLine>();
-				string filename = GetTargetPath(this.Filename);
-				using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-				using (var reader = new StreamReader(stream, Encoding.UTF8)) {
-					stream.Position = this.LastPosition;
-					while (!reader.EndOfStream) {
-						string s = reader.ReadLine();
-						var line = new LogLine(this, s);
-						lines.Enqueue(line);
+				try {
+					string filename = GetTargetPath(this.Filename);
+					using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+					using (var reader = new StreamReader(stream, Encoding.UTF8)) {
+						stream.Position = this.LastPosition;
+						while (!reader.EndOfStream) {
+							string s = reader.ReadLine();
+							var line = new LogLine(this, s);
+							lines.Enqueue(line);
+						}
+						this.LastPosition = stream.Position;
 					}
-					this.LastPosition = stream.Position;
+				} catch (Exception ex) {
+					// FileNotFoundException
+					Console.WriteLine(ex.Message);
 				}
 				return lines;
 			}
@@ -410,7 +427,8 @@ namespace SpinningLog
 
 		List<LogFile> log_files = new List<LogFile>();
 		List<LogLine> merged_lines = new List<LogLine>();
-		DateTime LastTime = DateTime.MinValue;
+		//DateTime LastTime = DateTime.MinValue;
+		DateTime LastTime = DateTime.Now;
 
 		string TimeSpanString(TimeSpan timespan)
 		{
@@ -448,13 +466,12 @@ namespace SpinningLog
 				if (Directory.Exists(path) || Directory.Exists(link_to)) {
 					foreach (string filter in LogFilters)
 						AddLogFiles(Directory.GetFiles(link_to, filter, SearchOption.AllDirectories));
-				} else if (File.Exists(path)) {
+				} else {
 					if (log_files.Any(l => l.Filename == path))
 						continue;   // ignore already exists
 					log_files.Add(new LogFile(path));
 					Console.WriteLine("add file: {0}", path);
-				} else
-					Console.WriteLine("no file: {0}", path);
+				}
 			}
 		}
 

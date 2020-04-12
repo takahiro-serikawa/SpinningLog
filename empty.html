@@ -20,7 +20,7 @@ body {
 pre {
 	margin: 0;
 	font-family: 'Verdana';
-	/*border: 1px solid dashed red; /* for bounds test */
+	/*border: 1px solid red; /* for bounds test */
 }
 
 /* filename column */
@@ -34,17 +34,20 @@ label {
 .timespan {
 	display: inline-block;
 	width: 100%;
-	color: black;
-	background: tan;
+	color: white;
+	background: #122;
 	font-size: 85%;
-	text-align: center;
+	/*text-align: center;*/
+	padding-left: 140px;
 }
-.timespan:after { content: ' passed'; }
+
+/*.timespan:after { content: ' passed'; }*/
 .timespan.back {
-	color: black;
-	background: indigo;
+	color: fuchsia;
+	/*background: indigo;*/
 }
-.timespan.back:after { content: ' goes-back'; }
+/*.timespan.back:after { content: ' goes-back'; }*/
+#latest.timespan { background: #008; }
 
 /* flash newest lines */
 .flash-effect:nth-of-type(n+2) {
@@ -58,8 +61,8 @@ label {
 </head>
 
 <body>
- <div id='merged'></div>
-
+ <div id=merged></div>
+ <pre><span id=latest class='timespan'></span></pre>
 <script>
 'use strict';
 
