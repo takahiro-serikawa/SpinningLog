@@ -106,5 +106,41 @@ namespace SpinningLog.Properties {
                 this["win_height"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\takah\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe")]
+        public string editor_exe {
+            get {
+                return ((string)(this["editor_exe"]));
+            }
+            set {
+                this["editor_exe"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("--goto {0}:{1}")]
+        public string editor_opt {
+            get {
+                return ((string)(this["editor_opt"]));
+            }
+            set {
+                this["editor_opt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int editor_lineno0 {
+            get {
+                return ((int)(this["editor_lineno0"]));
+            }
+            set {
+                this["editor_lineno0"] = value;
+            }
+        }
     }
 }

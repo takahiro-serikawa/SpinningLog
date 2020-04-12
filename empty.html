@@ -1,26 +1,22 @@
 ﻿<html>
 <head>
- <meta http-equiv='X-UA-Compatible' content='IE=edge'>
- <title>spinnin'log</title>
+	<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+	<title>spinnin'log</title>
 
 <style>
 body {
-	padding: 0;
+	margin: 0;
 	color: white;
 	background: black;
 	height: 100vh;	/* for _DragOver event */
 }
 
 #merged {
-	/*padding: 1px 7px;*/
-	/*margin: 0;*/
 }
 
-/* log lines are displayed in <pre>formatted text */
 pre {
 	margin: 0;
 	font-family: 'Verdana';
-	/*border: 1px solid red; /* for bounds test */
 }
 
 /* filename column */
@@ -28,7 +24,13 @@ label {
 	display: inline-block;
 	width: 130px;
 	text-align: right; /**/
+	cursor: pointer;
+	transition: background 0.3s;
 }
+label:hover {
+	background: #222;
+}
+
 .highlight { color: fuchsia; }
 
 .timespan {
@@ -37,14 +39,12 @@ label {
 	color: white;
 	background: #122;
 	font-size: 85%;
-	/*text-align: center;*/
 	padding-left: 140px;
 }
 
-/*.timespan:after { content: ' passed'; }*/
+.timespan:after { content: ' passed'; }/**/
 .timespan.back {
-	color: fuchsia;
-	/*background: indigo;*/
+	background: #212;
 }
 /*.timespan.back:after { content: ' goes-back'; }*/
 #latest.timespan { background: #008; }
@@ -61,21 +61,43 @@ label {
 </head>
 
 <body>
- <div id=merged></div>
- <pre><span id=latest class='timespan'></span></pre>
+	<div id=merged>
+
+<!-- log lines are inserted here as following pre -->
+<pre><label style=color:red data-lineno=123>sample.log</label> 2020-4-12 22:15:11.123 sample line
+<label style=color:orange data-lineno=2045>SMPL.LOG</label> 2020-4-12 22:17:53.567 === LOG ===
+<span class=timespan>00:05:12 passed</span>
+<label></label> ...</pre>
+
+	</div>
+	<pre><span id=latest class='timespan'> 0:00:00.999</span></pre>
+
 <script>
 'use strict';
 
 document.onkeyup = function (ev) {
 	switch (ev.which) {
 	case 35: // END
-		window.external.ComCommand('end');
+		window.external.ComCommand('end', null);
 		break;
 
 	case 36: // HOME
-		window.external.ComCommand('home');
+		window.external.ComCommand('home', null);
 		break;
 	}
+}
+
+var sel = { filename: null, lineno: null };
+
+document.onmouseup = function (ev) {
+	sel.lineno = ev.target.dataset.lineno;
+	sel.filename = ev.target.dataset.filename;
+	if (sel.filename || sel.lineno)
+		window.external.ComCommand('select', GetLastSelected());
+}
+
+function GetLastSelected() {
+	return sel.filename + '\t' + sel.lineno
 }
 </script>
 </body>

@@ -54,6 +54,9 @@
 			this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
 			this.LiveTimer = new System.Windows.Forms.Timer(this.components);
 			this.DropPanel = new System.Windows.Forms.Panel();
+			this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.findTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -114,7 +117,6 @@
 			// 
 			// FileCloseMenu
 			// 
-			this.FileCloseMenu.Enabled = false;
 			this.FileCloseMenu.Name = "FileCloseMenu";
 			this.FileCloseMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
 			this.FileCloseMenu.Size = new System.Drawing.Size(180, 22);
@@ -153,6 +155,10 @@
 			// 
 			// editToolStripMenuItem
 			// 
+			this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.findTextToolStripMenuItem,
+            this.undoToolStripMenuItem,
+            this.copyToolStripMenuItem});
 			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
 			this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
 			this.editToolStripMenuItem.Text = "&Edit";
@@ -219,16 +225,16 @@
 			// 
 			// TagJumpMenu
 			// 
-			this.TagJumpMenu.Enabled = false;
 			this.TagJumpMenu.Name = "TagJumpMenu";
+			this.TagJumpMenu.ShortcutKeys = System.Windows.Forms.Keys.F9;
 			this.TagJumpMenu.Size = new System.Drawing.Size(180, 22);
 			this.TagJumpMenu.Text = "Tag &Jump ...";
 			this.TagJumpMenu.Click += new System.EventHandler(this.TagJumpMenu_Click);
 			// 
 			// ShowInExplorerMenu
 			// 
-			this.ShowInExplorerMenu.Enabled = false;
 			this.ShowInExplorerMenu.Name = "ShowInExplorerMenu";
+			this.ShowInExplorerMenu.ShortcutKeys = System.Windows.Forms.Keys.F10;
 			this.ShowInExplorerMenu.Size = new System.Drawing.Size(180, 22);
 			this.ShowInExplorerMenu.Text = "&Explorer ...";
 			this.ShowInExplorerMenu.Click += new System.EventHandler(this.ShowInExplorerMenu_Click);
@@ -290,6 +296,27 @@
 			this.DropPanel.DragOver += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragOver);
 			this.DropPanel.DragLeave += new System.EventHandler(this.DropPanel_DragLeave);
 			// 
+			// undoToolStripMenuItem
+			// 
+			this.undoToolStripMenuItem.Enabled = false;
+			this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+			this.undoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.undoToolStripMenuItem.Text = "&Undo";
+			// 
+			// copyToolStripMenuItem
+			// 
+			this.copyToolStripMenuItem.Enabled = false;
+			this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+			this.copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.copyToolStripMenuItem.Text = "&Copy";
+			// 
+			// findTextToolStripMenuItem
+			// 
+			this.findTextToolStripMenuItem.Enabled = false;
+			this.findTextToolStripMenuItem.Name = "findTextToolStripMenuItem";
+			this.findTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.findTextToolStripMenuItem.Text = "&Find Text";
+			// 
 			// SpinningMain
 			// 
 			this.AllowDrop = true;
@@ -342,6 +369,9 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
 		private System.Windows.Forms.ToolStripMenuItem TagJumpMenu;
 		private System.Windows.Forms.ToolStripMenuItem ShowInExplorerMenu;
+		private System.Windows.Forms.ToolStripMenuItem findTextToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
 	}
 }
 

@@ -43,14 +43,16 @@ namespace SpinningLog
 				  (webBrowser1.DocumentTitle != "") ? webBrowser1.DocumentTitle : this.Text,
 				  ver.Major, ver.Minor);
 
+
 				// panel takes over drag events, WebBrowser is not supported.
 				webBrowser1.Document.Body.DragOver += (body, e2) => {
 					DropPanel.BringToFront();
 				};
 
-				webBrowser1.Visible = false;
+				webBrowser1.Document.GetElementById("merged").InnerHtml = "";
+				//webBrowser1.Visible = false;
 				RefreshMerged();
-				webBrowser1.Visible = true;
+				//webBrowser1.Visible = true;
 			};
 
 			// load "empty.html" from resource
@@ -148,6 +150,10 @@ namespace SpinningLog
 				if (win_state != FormWindowState.Minimized)
 					this.WindowState = win_state;
 			}
+
+			editor_exe = Properties.Settings.Default.editor_exe;
+			editor_opt = Properties.Settings.Default.editor_opt;
+			editor_lineno0 = Properties.Settings.Default.editor_lineno0;
 		}
 
 		void SaveSettings()
@@ -189,7 +195,15 @@ namespace SpinningLog
 
 		private void FileCloseMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			//throw new Exception("no implement");
+			string selected = (string)CallJavaScript("GetLastSelected", null);
+			var ss = selected.Split('\t');
+			var log = log_files.Find(x => x.Filename == ss[0]);
+			if (log != null) {
+				log_files.Remove(log);
+				//merged_lines.RemoveAll(x => x.LogFile == log);
+				Reload();
+			}
 		}
 
 		private void FileCloseAllMenu_Click(object sender, EventArgs e)
@@ -235,14 +249,27 @@ namespace SpinningLog
 			Console.WriteLine("LiveMenu.CHecked = {0}", LiveMenu.Checked);
 		}
 
+		string editor_exe = @"C:\Users\takah\AppData\Local\Programs\Microsoft VS Code\Code.exe";
+		string editor_opt = @"--goto {0}:{1}";
+		int editor_lineno0 = 1;
+
 		private void TagJumpMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			string selected = (string)CallJavaScript("GetLastSelected", null);
+			var ss = selected.Split('\t');
+			string filename = ss[0];
+			int lineno = editor_lineno0 + int.Parse(ss[1]);
+			Process.Start(editor_exe, string.Format(editor_opt, filename, lineno));
 		}
 
 		private void ShowInExplorerMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			string selected = (string)CallJavaScript("GetLastSelected", null);
+			var ss = selected.Split('\t');
+			string path = ss[0];
+			//if (File.Exists(path))
+				Process.Start("EXPLORER.EXE", "/select,\"" + path + "\"");
+			//else
 		}
 
 		private void HelpAboutMenu_Click(object sender, EventArgs e)
@@ -290,7 +317,7 @@ namespace SpinningLog
 			}
 
 			// call from webBrowser1's script
-			public void ComCommand(string command)
+			public void ComCommand(string command, string option)
 			{
 				switch (command) {
 				case "home":
@@ -299,13 +326,16 @@ namespace SpinningLog
 				case "end":
 					main.LiveMenu_Click(null, null); 
 					break;
+				case "select":
+					//MessageBox.Show("select:"+option);
+					break;
 				}
 			}
 		}
 
-		void CallJavaScript(string funcname, string[] args)
+		object CallJavaScript(string funcname, string[] args)
 		{
-			webBrowser1.Document.InvokeScript(funcname, args);
+			return webBrowser1.Document.InvokeScript(funcname, args);
 		}
 
 		public static string GetTargetPath(string filename)
@@ -327,6 +357,7 @@ namespace SpinningLog
 			public Color Color { get; set; }
 
 			public long LastPosition { get; set; }
+			public int LineCount;
 
 			static Color[] auto_colors = {
 				Color.Gray, 
@@ -339,6 +370,7 @@ namespace SpinningLog
 			{
 				this.Filename = filename;
 				this.LastPosition = 0;
+				this.LineCount = 0;
 
 				// assign default color automatically
 				this.Color = auto_colors[color_index];
@@ -359,6 +391,7 @@ namespace SpinningLog
 						while (!reader.EndOfStream) {
 							string s = reader.ReadLine();
 							var line = new LogLine(this, s);
+							line.LineNo = this.LineCount++;
 							lines.Enqueue(line);
 						}
 						this.LastPosition = stream.Position;
@@ -402,12 +435,14 @@ namespace SpinningLog
 			{
 				this.LastPosition = 0;
 				this.LastTime = new DateTime();
+				this.LineCount = 0;
 			}
 		}
 
 		class LogLine
 		{
 			public LogFile LogFile { get; set; }
+			public int LineNo { get; set; }
 			public string Text { get; set; }
 			public DateTime Time { get { return raw_time + TimeDifference; } }
 			DateTime raw_time;
@@ -514,11 +549,12 @@ namespace SpinningLog
 					queues.Remove(top);
 
 				// insert time span if more than 3000 msec
-				var timespan = line.Time - LastTime;
-				if (timespan.TotalMilliseconds >= 3000) {
-					html.AppendLine("<span class='timespan'>" + TimeSpanString(timespan) + "</span>");
-				} else if (timespan.TotalMilliseconds < 0) {
-					html.AppendLine("<span class='timespan back'>" + TimeSpanString(timespan) + "</span>");
+				if (merged_lines.Count > 0) {
+					var timespan = line.Time - LastTime;
+					if (timespan.TotalMilliseconds >= 3000)
+						html.AppendLine("<span class='timespan'>" + TimeSpanString(timespan) + "</span>");
+					else if (timespan.TotalMilliseconds < 0)
+						html.AppendLine("<span class='timespan back'>" + TimeSpanString(timespan) + "</span>");
 				}
 				LastTime = line.Time;
 
@@ -528,7 +564,9 @@ namespace SpinningLog
 
 				text = HightlightHtml(text, HighlightWords);
 
-				html.Append("<label style=color:" + line.LogFile.Color.Name + ">"
+				html.Append("<label style=color:" + line.LogFile.Color.Name
+				 + " data-lineno=" + line.LineNo
+				 + " data-filename=" + line.LogFile.Filename + ">"
 				 + Path.GetFileName(line.LogFile.Filename) + "</label> "
 				 + text + "\n");
 
