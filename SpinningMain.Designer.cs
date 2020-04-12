@@ -94,7 +94,7 @@
 			// 
 			this.FileNewMenu.Name = "FileNewMenu";
 			this.FileNewMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-			this.FileNewMenu.Size = new System.Drawing.Size(180, 22);
+			this.FileNewMenu.Size = new System.Drawing.Size(157, 22);
 			this.FileNewMenu.Text = "&New ...";
 			this.FileNewMenu.Click += new System.EventHandler(this.FileNewMenu_Click);
 			// 
@@ -102,7 +102,7 @@
 			// 
 			this.FileOpenMenu.Name = "FileOpenMenu";
 			this.FileOpenMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-			this.FileOpenMenu.Size = new System.Drawing.Size(180, 22);
+			this.FileOpenMenu.Size = new System.Drawing.Size(157, 22);
 			this.FileOpenMenu.Text = "&Open ...";
 			this.FileOpenMenu.Click += new System.EventHandler(this.FileOpenMenu_Click);
 			// 
@@ -110,33 +110,33 @@
 			// 
 			this.FileCloseMenu.Name = "FileCloseMenu";
 			this.FileCloseMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
-			this.FileCloseMenu.Size = new System.Drawing.Size(180, 22);
+			this.FileCloseMenu.Size = new System.Drawing.Size(157, 22);
 			this.FileCloseMenu.Text = "&Close";
 			this.FileCloseMenu.Click += new System.EventHandler(this.FileCloseMenu_Click);
 			// 
 			// FileCloseAllMenu
 			// 
 			this.FileCloseAllMenu.Name = "FileCloseAllMenu";
-			this.FileCloseAllMenu.Size = new System.Drawing.Size(180, 22);
+			this.FileCloseAllMenu.Size = new System.Drawing.Size(157, 22);
 			this.FileCloseAllMenu.Text = "C&lose All";
 			this.FileCloseAllMenu.Click += new System.EventHandler(this.FileCloseAllMenu_Click);
 			// 
 			// FileExportMenu
 			// 
 			this.FileExportMenu.Name = "FileExportMenu";
-			this.FileExportMenu.Size = new System.Drawing.Size(180, 22);
+			this.FileExportMenu.Size = new System.Drawing.Size(157, 22);
 			this.FileExportMenu.Text = "Export ...";
 			this.FileExportMenu.Click += new System.EventHandler(this.FileExportMenu_Click);
 			// 
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(154, 6);
 			// 
 			// AppExitMenu
 			// 
 			this.AppExitMenu.Name = "AppExitMenu";
-			this.AppExitMenu.Size = new System.Drawing.Size(180, 22);
+			this.AppExitMenu.Size = new System.Drawing.Size(157, 22);
 			this.AppExitMenu.Text = "e&Xit";
 			this.AppExitMenu.Click += new System.EventHandler(this.AppExitMenu_Click);
 			// 
@@ -159,7 +159,7 @@
 			// 
 			this.ViewRefreshMenu.Name = "ViewRefreshMenu";
 			this.ViewRefreshMenu.ShortcutKeys = System.Windows.Forms.Keys.F5;
-			this.ViewRefreshMenu.Size = new System.Drawing.Size(180, 22);
+			this.ViewRefreshMenu.Size = new System.Drawing.Size(132, 22);
 			this.ViewRefreshMenu.Text = "&Refresh";
 			this.ViewRefreshMenu.Click += new System.EventHandler(this.ViewRefreshMenu_Click);
 			// 
@@ -167,7 +167,7 @@
 			// 
 			this.ViewClearMenu.Name = "ViewClearMenu";
 			this.ViewClearMenu.ShortcutKeys = System.Windows.Forms.Keys.F6;
-			this.ViewClearMenu.Size = new System.Drawing.Size(180, 22);
+			this.ViewClearMenu.Size = new System.Drawing.Size(132, 22);
 			this.ViewClearMenu.Text = "&Clear";
 			this.ViewClearMenu.Click += new System.EventHandler(this.ViewClearMenu_Click);
 			// 
@@ -182,7 +182,7 @@
 			// HelpAboutMenu
 			// 
 			this.HelpAboutMenu.Name = "HelpAboutMenu";
-			this.HelpAboutMenu.Size = new System.Drawing.Size(180, 22);
+			this.HelpAboutMenu.Size = new System.Drawing.Size(107, 22);
 			this.HelpAboutMenu.Text = "&About";
 			this.HelpAboutMenu.Click += new System.EventHandler(this.HelpAboutMenu_Click);
 			// 
@@ -252,6 +252,7 @@
 			this.Controls.Add(this.menuStrip1);
 			this.Font = new System.Drawing.Font("Yu Gothic UI", 9F);
 			this.MainMenuStrip = this.menuStrip1;
+			this.MinimumSize = new System.Drawing.Size(300, 100);
 			this.Name = "SpinningMain";
 			this.Text = "spinnin\' log";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SpinningMain_FormClosing);

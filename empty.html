@@ -2,36 +2,52 @@
 <head>
  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
  <title>spinnin'log</title>
+
 <style>
 body {
-	margin: 0;
 	padding: 0;
 	color: white;
 	background: black;
-}
-#merged {
-	padding: 1px 7px;
-	margin: 0;
-	font-family: Verdana;
 	height: 100vh;	/* for _DragOver event */
 }
-.highlight {
-	color: fuchsia;
-}
-.timespan {
-	color: black;
-	background: tan;
-	font-size: 90%;
-	text-align: center;
-}
-.goes-back {
-	color: black;
-	background: indigo;
-	font-size: 90%;
-	text-align: center;
+
+#merged {
+	/*padding: 1px 7px;*/
+	/*margin: 0;*/
 }
 
-.flash-effect {
+/* log lines are displayed in <pre>formatted text */
+pre {
+	margin: 0;
+	font-family: 'Verdana';
+	/*border: 1px solid dashed red; /* for bounds test */
+}
+
+/* filename column */
+label {
+	display: inline-block;
+	width: 130px;
+	text-align: right; /**/
+}
+.highlight { color: fuchsia; }
+
+.timespan {
+	display: inline-block;
+	width: 100%;
+	color: black;
+	background: tan;
+	font-size: 85%;
+	text-align: center;
+}
+.timespan:after { content: ' passed'; }
+.timespan.back {
+	color: black;
+	background: indigo;
+}
+.timespan.back:after { content: ' goes-back'; }
+
+/* flash newest lines */
+.flash-effect:nth-of-type(n+2) {
 	animation: flash 1.7s ease 0;
 }
 @keyframes flash {

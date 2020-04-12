@@ -6,7 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using System.IO;
@@ -39,11 +39,14 @@ namespace SpinningLog
 				  (webBrowser1.DocumentTitle != "") ? webBrowser1.DocumentTitle : this.Text,
 				  ver.Major, ver.Minor);
 
+				// panel takes over drag events, webBrowsers is not supported.
 				webBrowser1.Document.Body.DragOver += (body, e2) => {
-					// panel takes over drag events, webBrowsers is not supported.
 					DropPanel.BringToFront();
 				};
+
+				webBrowser1.Visible = false;
 				RefreshMerged();
+				webBrowser1.Visible = true;
 			};
 
 			// load "empty.html" from resource
@@ -54,11 +57,6 @@ namespace SpinningLog
 
 			ParseCommandLine(Environment.GetCommandLineArgs());
 			RestoreSettings();
-		}
-
-		private void DropPanel_DragLeave(object sender, EventArgs e)
-		{
-			DropPanel.SendToBack();
 		}
 
 		void ParseCommandLine(string[] args)
@@ -196,8 +194,8 @@ namespace SpinningLog
 		private void FileExportMenu_Click(object sender, EventArgs e)
 		{
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK) {
-				var merged = webBrowser1.Document.GetElementById("merged");
-				File.WriteAllText(saveFileDialog1.FileName, merged.InnerText);
+				var div = webBrowser1.Document.GetElementById("merged");
+				File.WriteAllText(saveFileDialog1.FileName, div.InnerText);
 			}
 		}
 
@@ -222,8 +220,8 @@ namespace SpinningLog
 		{
 			LiveCheck.Checked = true;
 
-			var merged = webBrowser1.Document.GetElementById("merged");
-			webBrowser1.Document.Window.ScrollTo(0, merged.ScrollRectangle.Height);
+			var div = webBrowser1.Document.GetElementById("merged");
+			webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
 		}
 
 		private void HelpAboutMenu_Click(object sender, EventArgs e)
@@ -252,6 +250,11 @@ namespace SpinningLog
 			string[] filenames = (string[])e.Data.GetData(DataFormats.FileDrop, false);
 			AddLogFiles(filenames);
 			RefreshMerged();
+		}
+
+		private void DropPanel_DragLeave(object sender, EventArgs e)
+		{
+			DropPanel.SendToBack();
 		}
 
 
@@ -371,7 +374,13 @@ namespace SpinningLog
 		List<LogLine> merged_lines = new List<LogLine>();
 		DateTime LastTime = DateTime.MinValue;
 
-		List<string> LogFilters = new List<string>() { "*.log", "*.txt", /*"*.log.*" */ };
+		string TimeSpanString(TimeSpan timespan)
+		{
+			string s = timespan.ToString(@"h\:mm\:ss\.fff");
+			if (timespan.Days != 0)
+				return string.Format("{0} days and\n", timespan.Days) + s;
+			return s;
+		}
 
 		void Clear()
 		{
@@ -391,6 +400,8 @@ namespace SpinningLog
 			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
 			RefreshMerged();
 		}
+
+		List<string> LogFilters = new List<string>() { "*.log", "*.txt", /*"*.log.*" */ };
 
 		void AddLogFiles(IEnumerable<string> files)
 		{
@@ -426,33 +437,33 @@ namespace SpinningLog
 			DropPanel.SendToBack();
 			int tc0 = Environment.TickCount;
 
-			var group = new List<Queue<LogLine>>();
+			var queues = new List<Queue<LogLine>>();
 			foreach (var log in log_files) {
-				Queue<LogLine> lines = log.ReadIncrLinesQ();
-				if (lines.Count > 0)
-					group.Add(lines);
+				Queue<LogLine> queue = log.ReadIncrLinesQ();
+				if (queue.Count > 0)
+					queues.Add(queue);
 			}
 
 			var html = new StringBuilder(1000*1000);
-			while (group.Count > 0) {
+			while (queues.Count > 0) {
 				if (Environment.TickCount - tc0 > 100)
 					Cursor.Current = Cursors.WaitCursor;
 
-				var top = group[0];
-				foreach (var g in group)
-					if (top.Peek().Time > g.Peek().Time)
-						top = g;
+				var top = queues[0];
+				foreach (var q in queues)
+					if (top.Peek().Time > q.Peek().Time)
+						top = q;
 
 				LogLine line = top.Dequeue();
 				if (top.Count <= 0)
-					group.Remove(top);
+					queues.Remove(top);
 
 				// insert time span if more than 3000 msec
 				var timespan = line.Time - LastTime;
 				if (timespan.TotalMilliseconds >= 3000) {
-					html.Append("<div class=timespan>timespan " + timespan.ToString() + "</div>");
+					html.AppendLine("<span class='timespan'>" + TimeSpanString(timespan) + "</span>");
 				} else if (timespan.TotalMilliseconds < 0) {
-					html.Append("<div class=goes-back>timespan " + timespan.ToString() + "</div>");
+					html.AppendLine("<span class='timespan back'>" + TimeSpanString(timespan) + "</span>");
 				}
 				LastTime = line.Time;
 
@@ -472,16 +483,16 @@ namespace SpinningLog
 			if (html.Length > 0) {
 				Cursor.Current = Cursors.WaitCursor;
 
-				var pre = webBrowser1.Document.GetElementById("merged");
+				var div = webBrowser1.Document.GetElementById("merged");
 				// 多分ここが遅い
 				//pre.InnerHtml += html.ToString();
-				var div = webBrowser1.Document.CreateElement("div");
-				div.InnerHtml = html.ToString();
-				div.SetAttribute("className", "flash-effect");
-				pre.InsertAdjacentElement(HtmlElementInsertionOrientation.BeforeEnd, div);
+				var pre = webBrowser1.Document.CreateElement("pre");
+				pre.InnerHtml = html.ToString();
+				pre.SetAttribute("className", "flash-effect");
+				div.InsertAdjacentElement(HtmlElementInsertionOrientation.BeforeEnd, pre);
 
 				// scroll to newest line
-				webBrowser1.Document.Window.ScrollTo(0, pre.ScrollRectangle.Height);
+				webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
 			}
 
 			Cursor.Current = Cursors.Default;
