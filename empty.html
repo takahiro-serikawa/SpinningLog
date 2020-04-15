@@ -33,21 +33,21 @@ label:hover {
 
 .highlight { color: fuchsia; }
 
-.timespan {
+.blank {
 	display: inline-block;
 	width: 100%;
-	color: white;
+	color: #ffc;
 	background: #122;
 	font-size: 85%;
 	padding-left: 140px;
 }
 
-.timespan:after { content: ' passed'; }/**/
-.timespan.back {
+.blank:after { content: ' passed'; }/**/
+.blank.back {
 	background: #212;
 }
-/*.timespan.back:after { content: ' goes-back'; }*/
-#latest.timespan { background: #008; }
+/*.blank.back:after { content: ' goes-back'; }*/
+#latest.blank { background: #008; }
 
 /* flash newest lines */
 .flash-effect:nth-of-type(n+2) {
@@ -66,11 +66,11 @@ label:hover {
 <!-- log lines are inserted here as following pre -->
 <pre><label style=color:red data-lineno=123>sample.log</label> 2020-4-12 22:15:11.123 sample line
 <label style=color:orange data-lineno=2045>SMPL.LOG</label> 2020-4-12 22:17:53.567 === LOG ===
-<span class=timespan>00:05:12 passed</span>
+<span class=blank>00:05:12 passed</span>
 <label></label> ...</pre>
 
 	</div>
-	<pre><span id=latest class='timespan'> 0:00:00.999</span></pre>
+	<pre><span id=latest class=blank> 0:00:00.999</span></pre>
 
 <script>
 'use strict';

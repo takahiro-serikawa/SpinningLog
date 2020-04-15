@@ -68,6 +68,7 @@ namespace SpinningLog
 		void ParseCommandLine(string[] args)
 		{
 			bool opt_new = false;
+			string html_file = null;
 			var files = new List<string>();
 			for (int i = 1; i < args.Length; i++)
 				if (args[i][0] == '-') {
@@ -76,9 +77,15 @@ namespace SpinningLog
 						opt_new = true;
 						break;
 
+					case "--html":
+						if (++i < args.Length)
+							html_file = args[i];
+						break;
+
 					case "--file":
 					case "-f":
-						if (++i < args.Length) files.Add(args[i]);
+						if (++i < args.Length)
+							files.Add(args[i]);
 						break;
 					}
 				} else
@@ -133,6 +140,13 @@ namespace SpinningLog
 			}
 		}
 
+		// aplication settings
+		public class SpinningSett
+		{
+			public SpinningSett() { }
+
+			//public int blank_msec;
+		}
 
 		void RestoreSettings()
 		{
@@ -151,6 +165,16 @@ namespace SpinningLog
 					this.WindowState = win_state;
 			}
 
+			string encoding = Properties.Settings.Default.def_encoding;
+			if (encoding == "")
+				encoding = "UTF-8";
+				//encoding = "Shift_JIS";
+			try {
+				LogFile.DefaultEncoding = Encoding.GetEncoding(encoding);				
+			} catch (Exception ex) {
+				LogFile.DefaultEncoding = Encoding.UTF8;
+			}
+
 			editor_exe = Properties.Settings.Default.editor_exe;
 			editor_opt = Properties.Settings.Default.editor_opt;
 			editor_lineno0 = Properties.Settings.Default.editor_lineno0;
@@ -158,7 +182,7 @@ namespace SpinningLog
 
 		void SaveSettings()
 		{
-			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(x => x.Filename));
+			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(x => x.Name));
 
 			Properties.Settings.Default.win_state = (int)this.WindowState;
 			if (this.WindowState == FormWindowState.Normal) {
@@ -198,7 +222,7 @@ namespace SpinningLog
 			//throw new Exception("no implement");
 			string selected = (string)CallJavaScript("GetLastSelected", null);
 			var ss = selected.Split('\t');
-			var log = log_files.Find(x => x.Filename == ss[0]);
+			var log = log_files.Find(x => x.Name == ss[0]);
 			if (log != null) {
 				log_files.Remove(log);
 				//merged_lines.RemoveAll(x => x.LogFile == log);
@@ -353,8 +377,10 @@ namespace SpinningLog
 
 		class LogFile
 		{
-			public string Filename { get; set; }
+			public string Name { get; set; }
 			public Color Color { get; set; }
+			public Encoding Encoding { get; set; }
+			public static Encoding DefaultEncoding { get; set; } = Encoding.UTF8;
 
 			public long LastPosition { get; set; }
 			public int LineCount;
@@ -368,7 +394,7 @@ namespace SpinningLog
 
 			public LogFile(string filename)
 			{
-				this.Filename = filename;
+				this.Name = filename;
 				this.LastPosition = 0;
 				this.LineCount = 0;
 
@@ -376,6 +402,7 @@ namespace SpinningLog
 				this.Color = auto_colors[color_index];
 				if (++color_index >= auto_colors.Length)
 					color_index = 0;
+				this.Encoding = LogFile.DefaultEncoding;
 			}
 
 			// read unread lines
@@ -384,9 +411,9 @@ namespace SpinningLog
 			{
 				var lines = new Queue<LogLine>();
 				try {
-					string filename = GetTargetPath(this.Filename);
+					string filename = GetTargetPath(this.Name);
 					using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-					using (var reader = new StreamReader(stream, Encoding.UTF8)) {
+					using (var reader = new StreamReader(stream, this.Encoding)) {
 						stream.Position = this.LastPosition;
 						while (!reader.EndOfStream) {
 							string s = reader.ReadLine();
@@ -441,22 +468,18 @@ namespace SpinningLog
 
 		class LogLine
 		{
-			public LogFile LogFile { get; set; }
+			public LogFile File { get; set; }
 			public int LineNo { get; set; }
 			public string Text { get; set; }
 			public DateTime Time { get { return raw_time + TimeDifference; } }
 			DateTime raw_time;
 			TimeSpan TimeDifference;
-			public Encoding Encoding;
 
-			public static Encoding DefaultEncoding = Encoding.UTF8;
-
-			public LogLine(LogFile log, string text)
+			public LogLine(LogFile logfile, string text)
 			{
-				this.LogFile = log;
+				this.File = logfile;
 				this.Text = text;
-				this.raw_time = log.GetTimeFrom(Text);
-				this.Encoding = LogLine.DefaultEncoding;
+				this.raw_time = logfile.GetTimeFrom(Text);
 			}
 		}
 
@@ -502,7 +525,7 @@ namespace SpinningLog
 					foreach (string filter in LogFilters)
 						AddLogFiles(Directory.GetFiles(link_to, filter, SearchOption.AllDirectories));
 				} else {
-					if (log_files.Any(l => l.Filename == path))
+					if (log_files.Any(l => l.Name == path))
 						continue;   // ignore already exists
 					log_files.Add(new LogFile(path));
 					Console.WriteLine("add file: {0}", path);
@@ -510,15 +533,18 @@ namespace SpinningLog
 			}
 		}
 
-		List<string> HighlightWords = new List<string>(){
-			"error",
-			"failed", "fail",
-			"cannot", "can not", "can't",
-		};
+		//List<string> HighlightWords = new List<string>(){
+		//	"error",
+		//	"failed", "fail",
+		//	"cannot", "can not", "can't",
+		//};
+		static string HighlightWords = "error|failed|fail|cannot|can not|can't";
 
-		static string HightlightHtml(string text, List<string> words)
+		string HightlightHtml(string text, string words)
 		{
-			return Regex.Replace(text, "(" + string.Join("|", words) + ")",
+			//return Regex.Replace(text, "(" + string.Join("|", words) + ")",
+			//  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
+			return Regex.Replace(text, words,
 			  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
 		}
 
@@ -551,10 +577,10 @@ namespace SpinningLog
 				// insert time span if more than 3000 msec
 				if (merged_lines.Count > 0) {
 					var timespan = line.Time - LastTime;
-					if (timespan.TotalMilliseconds >= 3000)
-						html.AppendLine("<span class='timespan'>" + TimeSpanString(timespan) + "</span>");
-					else if (timespan.TotalMilliseconds < 0)
-						html.AppendLine("<span class='timespan back'>" + TimeSpanString(timespan) + "</span>");
+					if (timespan.TotalMilliseconds > Properties.Settings.Default.blank_msec)
+						html.AppendLine("<span class='blank'>" + TimeSpanString(timespan) + "</span>");
+					else if (timespan.TotalMilliseconds < -Properties.Settings.Default.blank_msec)
+						html.AppendLine("<span class='blank back'>" + TimeSpanString(timespan) + "</span>");
 				}
 				LastTime = line.Time;
 
@@ -564,10 +590,10 @@ namespace SpinningLog
 
 				text = HightlightHtml(text, HighlightWords);
 
-				html.Append("<label style=color:" + line.LogFile.Color.Name
+				html.Append("<label style=color:" + line.File.Color.Name
 				 + " data-lineno=" + line.LineNo
-				 + " data-filename=" + line.LogFile.Filename + ">"
-				 + Path.GetFileName(line.LogFile.Filename) + "</label> "
+				 + " data-filename=" + line.File.Name + ">"
+				 + Path.GetFileName(line.File.Name) + "</label> "
 				 + text + "\n");
 
 				merged_lines.Add(line);

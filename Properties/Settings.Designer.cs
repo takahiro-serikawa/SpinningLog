@@ -142,5 +142,29 @@ namespace SpinningLog.Properties {
                 this["editor_lineno0"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3000")]
+        public int blank_msec {
+            get {
+                return ((int)(this["blank_msec"]));
+            }
+            set {
+                this["blank_msec"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string def_encoding {
+            get {
+                return ((string)(this["def_encoding"]));
+            }
+            set {
+                this["def_encoding"] = value;
+            }
+        }
     }
 }
