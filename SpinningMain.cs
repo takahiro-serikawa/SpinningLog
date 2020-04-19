@@ -29,6 +29,7 @@ namespace SpinningLog
 			// redirect Debug log to file
 			var dtl = (DefaultTraceListener)Debug.Listeners["Default"];
 			dtl.LogFileName = Path.ChangeExtension(Application.ExecutablePath, "log");
+			ExportHtmlMenu.Visible = true;
 #else
 			webBrowser1.ScriptErrorsSuppressed = true;
 #endif
@@ -241,6 +242,13 @@ namespace SpinningLog
 				var div = webBrowser1.Document.GetElementById("merged");
 				File.WriteAllText(saveFileDialog1.FileName, div.InnerText);
 			}
+		}
+
+		private void ExportHtmlMenu_Click(object sender, EventArgs e)
+		{
+			string html = webBrowser1.Document.Body.OuterHtml;
+			File.WriteAllText("export.log", html);
+
 		}
 
 		private void ViewReloadMenu_Click(object sender, EventArgs e)
