@@ -80,15 +80,9 @@ label:hover {
 'use strict';
 
 document.onkeyup = function (ev) {
-	switch (ev.which) {
-	case 35: // END
-		window.external.ComCommand('end', null);
-		break;
-
-	case 36: // HOME
-		window.external.ComCommand('home', null);
-		break;
-	}
+	// forward function key to main form
+	let fkey = { 35: 'end', 36: 'home' }[ev.which];
+	if (fkey) window.external.ComCommand(fkey, null)
 }
 
 var sel = { filename: null, lineno: null };
