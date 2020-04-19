@@ -85,18 +85,14 @@ document.onkeyup = function (ev) {
 	if (fkey) window.external.ComCommand(fkey, null)
 }
 
-var sel = { filename: null, lineno: null };
+var tag;
+function GetLastSelected() { return tag }
 
 document.onmouseup = function (ev) {
-	sel.lineno = ev.target.dataset.lineno;
-	sel.filename = ev.target.dataset.filename;
-	if (sel.filename || sel.lineno)
-		window.external.ComCommand('select', GetLastSelected());
+	tag = ev.target.dataset.tag;
+	if (tag) window.external.ComCommand('select', tag)
 }
 
-function GetLastSelected() {
-	return sel.filename + '\t' + sel.lineno
-}
 </script>
 </body>
 </html>

@@ -280,8 +280,8 @@ namespace SpinningLog
 		private void TagJumpMenu_Click(object sender, EventArgs e)
 		{
 			string selected = (string)CallJavaScript("GetLastSelected", null);
-			var ss = selected.Split('\t');
-			string filename = ss[0];
+			var ss = selected.Split(':');
+			string filename = (log_files.Find(x => x.ID == ss[0])).Name;
 			int lineno = editor_lineno0 + int.Parse(ss[1]);
 			Process.Start(editor_exe, string.Format(editor_opt, filename, lineno));
 		}
@@ -378,6 +378,9 @@ namespace SpinningLog
 		class LogFile
 		{
 			public string Name { get; set; }
+			public string ID { get; private set; }
+			static int serial = 0;
+
 			public Color Color { get; set; }
 			public Encoding Encoding { get; set; }
 			public static Encoding DefaultEncoding { get; set; } = Encoding.UTF8;
@@ -397,6 +400,7 @@ namespace SpinningLog
 				this.Name = filename;
 				this.LastPosition = 0;
 				this.LineCount = 0;
+				this.ID = string.Format("{0}", serial++);
 
 				// assign default color automatically
 				this.Color = auto_colors[color_index];
@@ -603,8 +607,7 @@ namespace SpinningLog
 				text = HightlightHtml(text, HighlightWords);
 
 				html.Append("<label style=color:" + line.File.Color.Name
-				 + " data-lineno=" + line.LineNo
-				 + " data-filename=" + line.File.Name + ">"
+				 + " data-tag=" + line.File.ID + ":" + line.LineNo + ">"
 				 + Path.GetFileName(line.File.Name) + "</label> "
 				 + text + "\n");
 
