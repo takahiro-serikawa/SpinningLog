@@ -552,6 +552,7 @@ namespace SpinningLog
 		{
 			DropPanel.SendToBack();
 			int tc0 = Environment.TickCount;
+			var sw = Stopwatch.StartNew();
 
 			var queues = new List<Queue<LogLine>>();
 			foreach (var log in log_files) {
@@ -560,7 +561,11 @@ namespace SpinningLog
 					queues.Add(queue);
 			}
 
-			var html = new StringBuilder(1000*1000);
+			long dbg_read_msec = sw.ElapsedMilliseconds;
+			sw.Restart();
+
+			int start_index = merged_lines.Count;
+			int n = 0;
 			while (queues.Count > 0) {
 				if (Environment.TickCount - tc0 > 100)
 					Cursor.Current = Cursors.WaitCursor;
@@ -573,6 +578,13 @@ namespace SpinningLog
 				LogLine line = top.Dequeue();
 				if (top.Count <= 0)
 					queues.Remove(top);
+
+				merged_lines.Add(line);
+			}
+
+			var html = new StringBuilder(1000*1000);
+			for (int i = start_index; i < merged_lines.Count; i++) {
+				var line = merged_lines[i];
 
 				// insert time span if more than 3000 msec
 				if (merged_lines.Count > 0) {
@@ -596,10 +608,13 @@ namespace SpinningLog
 				 + Path.GetFileName(line.File.Name) + "</label> "
 				 + text + "\n");
 
-				merged_lines.Add(line);
+				n++;
 			}
 
-			if (html.Length > 0) {
+			long dbg_merge_msec = sw.ElapsedMilliseconds;
+			sw.Restart();
+
+			if (n > 0) {
 				Cursor.Current = Cursors.WaitCursor;
 
 				var div = webBrowser1.Document.GetElementById("merged");
@@ -610,8 +625,16 @@ namespace SpinningLog
 				pre.SetAttribute("className", "flash-effect");
 				div.InsertAdjacentElement(HtmlElementInsertionOrientation.BeforeEnd, pre);
 
+				long dbg_html_msec = sw.ElapsedMilliseconds;
+				sw.Restart();
+
 				// scroll to newest line
 				webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
+
+				long dbg_scroll_msec = sw.ElapsedMilliseconds;
+
+				Console.WriteLine("RefreshMerged: {0} lines / read {1}, merge {2}, html {3} msec, scroll {4}",
+				 n, dbg_read_msec, dbg_merge_msec, dbg_html_msec, dbg_scroll_msec);
 			}
 
 			Cursor.Current = Cursors.Default;

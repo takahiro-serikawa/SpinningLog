@@ -9,6 +9,7 @@ body {
 	color: white;
 	background: black;
 	height: 100vh;	/* for _DragOver event */
+	font-family: 'Verdana';
 }
 
 #merged {
@@ -16,11 +17,8 @@ body {
 
 pre {
 	margin: 0;
-	white-space: pre;
-	font-family: monospace; /*Verdana;*/
-	font-size: 11pt;
+	font-family: 'Verdana';
 	background: black;		/* specify color code for paste to MS-Word */
-
 }
 
 /* filename column */
@@ -61,34 +59,39 @@ label:hover {
    0% { background-color: #008; }
  100% { background-color: #000; }
 }
+
+#live {
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+	padding: 6px 10px;
+	border: 2px solid red;
+	color: red;
+}
+
+.abs {
+    position: absolute;
+}
 </style>
 </head>
 
 <body>
 	<div id=merged>
-
-<!-- log lines are inserted here as following pre -->
-<pre><label style=color:red data-lineno=123>sample.log</label> 2020-4-12 22:15:11.123 sample line
-<label style=color:orange data-lineno=2045>SMPL.LOG</label> 2020-4-12 22:17:53.567 === LOG ===
-<span class=blank>00:05:12 passed</span>
-<label></label> ...</pre>
-
-	</div>
-	<pre><span id=latest class=blank> 0:00:00.999</span></pre>
+        <pre><span class=abs style=top:0px><font color=red>sample1.log</font> 2020-04-18 14:00:00.123 startup</span>
+<span class=abs style=top:20px><font color=red>sample1.log</font> 2020-04-18 14:00:00.123...</span>
+</pre>
+    </div>
 
 <script>
 'use strict';
 
-document.onkeyup = function (ev) {
-	switch (ev.which) {
-	case 35: // END
-		window.external.ComCommand('end', null);
-		break;
 
-	case 36: // HOME
-		window.external.ComCommand('home', null);
-		break;
-	}
+document.onkeyup = function (ev) {
+    const fkeys = {
+        35: 'end',
+        36: 'home',
+    };
+    window.external.ComCommand(fkeys[ev.which]);
 }
 
 var sel = { filename: null, lineno: null };
@@ -103,6 +106,12 @@ document.onmouseup = function (ev) {
 function GetLastSelected() {
 	return sel.filename + '\t' + sel.lineno
 }
+
+if (0) var tid = setInterval(function () {
+	let r = (255 * (Date.now() % 1000) / 1000) | 0;
+	let live = document.getElementById('live');
+	live.style.color = 'rgb(255,'+r+','+r+')'
+}, 10);
 </script>
 </body>
 </html>
