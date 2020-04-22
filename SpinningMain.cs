@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Web; 
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
+using System.Xml.Serialization;
 
 // add ref. "System.Web"
 // add ref. IWshRuntimeLibrary "Windows Script Host Object Model"
@@ -144,13 +145,56 @@ namespace SpinningLog
 		// aplication settings
 		public class SpinningSett
 		{
-			public SpinningSett() { }
+			public SpinningSett() 
+			{
+				// default values
+				FormWindowState = FormWindowState.Normal;
+				//def_encoding = "UTF-8";
+				def_encoding = "Shift_JIS";
+				blank_msec = 3000;
 
-			//public int blank_msec;
+				// app default
+				editor = new Editor();
+				editor.exe = @"C:\Users\takah\AppData\Local\Programs\Microsoft VS Code\Code.exe";
+				editor.options = @"--goto {0}:{1}";
+				editor.lineno0 = 1;
+
+				log_filters = "*.log|*.txt";
+				highlights = "error|failed|fail|cannot|can not|can't";
+			}
+
+			public FormWindowState FormWindowState;
+			public Rectangle win_bounds;
+
+			//public Encoding def_encoding;
+			public string def_encoding;
+			public double blank_msec;
+
+			// APP
+			public class Editor {
+				public string exe;
+				public string options;
+				public int lineno0;
+			}
+			public Editor editor;
+
+			public string log_filters;
+			public string highlights;
 		}
+
+		SpinningSett sett = new SpinningSett();
+		string sett_filename = "";
+		const string SLOG_EXT = ".slog";
 
 		void RestoreSettings()
 		{
+			string s = Path.ChangeExtension(Application.ExecutablePath, SLOG_EXT);
+			if (File.Exists(s))
+				sett_filename = s;
+			else
+				sett_filename = Path.GetDirectoryName(Application.LocalUserAppDataPath) + SLOG_EXT;
+			Debug.WriteLine("sett_filename={0}", sett_filename);
+
 			if (!Properties.Settings.Default.valid)
 				Properties.Settings.Default.Upgrade();
 
@@ -165,6 +209,17 @@ namespace SpinningLog
 				if (win_state != FormWindowState.Minimized)
 					this.WindowState = win_state;
 			}
+
+			if (File.Exists(sett_filename)) {
+				var serializer = new XmlSerializer(typeof(SpinningSett));
+				using (var sr = new StreamReader(sett_filename, Encoding.UTF8)) {
+					sett = (SpinningSett)serializer.Deserialize(sr);
+				}
+			} else
+				sett = new SpinningSett();
+
+			LogFilters = sett.log_filters.Split('|').ToList();
+			HighlightWords = sett.highlights;
 
 			string encoding = Properties.Settings.Default.def_encoding;
 			if (encoding == "")
@@ -200,6 +255,18 @@ namespace SpinningLog
 
 			Properties.Settings.Default.valid = true;
 			Properties.Settings.Default.Save();
+
+			// 
+			sett.FormWindowState = this.WindowState;
+			if (this.WindowState == FormWindowState.Normal)
+				sett.win_bounds = this.Bounds;
+			else
+				sett.win_bounds = this.RestoreBounds;
+			sett.def_encoding = LogFile.DefaultEncoding.WebName;
+			var serializer = new XmlSerializer(typeof(SpinningSett));
+			using (var sw = new StreamWriter(sett_filename, false, Encoding.UTF8)) {
+				serializer.Serialize(sw, sett);
+			}
 		}
 
 		// menu handlers
@@ -302,15 +369,13 @@ namespace SpinningLog
 		private void TagJumpMenu_Click(object sender, EventArgs e)
 		{
 			var tag = GetSelectedTag();
-			Process.Start(editor_exe, string.Format(editor_opt, tag.Log.Name, editor_lineno0 + tag.LineNo));
+			Process.Start(editor_exe, string.Format(editor_opt, "\""+tag.Log.Name+"\"", editor_lineno0 + tag.LineNo));
 		}
 
 		private void ShowInExplorerMenu_Click(object sender, EventArgs e)
 		{
 			var tag = GetSelectedTag();
-			//if (File.Exists(path))
-				Process.Start("EXPLORER.EXE", "/select,\"" + tag.Log.Name + "\"");
-			//else
+			Process.Start("EXPLORER.EXE", "/select,\"" + tag.Log.Name + "\"");
 		}
 
 		private void HelpAboutMenu_Click(object sender, EventArgs e)
@@ -506,8 +571,7 @@ namespace SpinningLog
 
 		List<LogFile> log_files = new List<LogFile>();
 		List<LogLine> merged_lines = new List<LogLine>();
-		//DateTime LastTime = DateTime.MinValue;
-		DateTime LastTime = DateTime.Now;
+		DateTime LastTime/* = DateTime.Now*/;
 
 		string TimeSpanString(TimeSpan timespan)
 		{
@@ -661,7 +725,6 @@ namespace SpinningLog
 			DropPanel.SendToBack();
 		}
 
-		#region live update
 		private void LiveTimer_Tick(object sender, EventArgs e)
 		{
 			try {
@@ -672,17 +735,6 @@ namespace SpinningLog
 				Debug.WriteLine("LiveTimer: " + ex.Message);
 			}
 		}
-
-		private void LiveCheck_CheckedChanged(object sender, EventArgs e)
-		{
-			if (LiveMenu.Checked) {
-				//LiveMenu.Font = new Font(LiveMenu.Font, FontStyle.Bold);
-			} else {
-				//LiveMenu.Font = new Font(LiveMenu.Font, FontStyle.Regular);
-				LiveMenu.ForeColor = SystemColors.ControlText;
-			}
-		}
-		#endregion
 
 	}
 }
