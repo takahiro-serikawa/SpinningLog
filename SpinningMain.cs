@@ -218,21 +218,36 @@ namespace SpinningLog
 			}
 		}
 
+		struct TagData
+		{
+			public LogFile Log;
+			public int LineNo;
+			public TagData(LogFile log, int no)
+			{
+				this.Log = log;
+				this.LineNo = no;
+			}
+		}
+
+		TagData GetSelectedTag()
+		{
+			string tag = (string)CallJavaScript("GetLastSelected", null);
+			var ss = tag.Split(':');
+			var log = log_files.Find(x => x.ID == ss[0]);
+			int lineno = int.Parse(ss[1]);
+			return new TagData(log, lineno);
+		}
+
 		private void FileCloseMenu_Click(object sender, EventArgs e)
 		{
-			//throw new Exception("no implement");
-			string selected = (string)CallJavaScript("GetLastSelected", null);
-			var ss = selected.Split('\t');
-			var log = log_files.Find(x => x.Name == ss[0]);
-			if (log != null) {
-				log_files.Remove(log);
-				//merged_lines.RemoveAll(x => x.LogFile == log);
-				Reload();
-			}
+			var tag = GetSelectedTag();
+			log_files.Remove(tag.Log);
+			Reload();
 		}
 
 		private void FileCloseAllMenu_Click(object sender, EventArgs e)
 		{
+			Cursor.Current = Cursors.WaitCursor;
 			Clear();
 		}
 
@@ -247,8 +262,7 @@ namespace SpinningLog
 		private void ExportHtmlMenu_Click(object sender, EventArgs e)
 		{
 			string html = webBrowser1.Document.Body.OuterHtml;
-			File.WriteAllText("export.log", html);
-
+			File.WriteAllText("export.html", html);
 		}
 
 		private void ViewReloadMenu_Click(object sender, EventArgs e)
@@ -287,20 +301,15 @@ namespace SpinningLog
 
 		private void TagJumpMenu_Click(object sender, EventArgs e)
 		{
-			string selected = (string)CallJavaScript("GetLastSelected", null);
-			var ss = selected.Split(':');
-			string filename = (log_files.Find(x => x.ID == ss[0])).Name;
-			int lineno = editor_lineno0 + int.Parse(ss[1]);
-			Process.Start(editor_exe, string.Format(editor_opt, filename, lineno));
+			var tag = GetSelectedTag();
+			Process.Start(editor_exe, string.Format(editor_opt, tag.Log.Name, editor_lineno0 + tag.LineNo));
 		}
 
 		private void ShowInExplorerMenu_Click(object sender, EventArgs e)
 		{
-			string selected = (string)CallJavaScript("GetLastSelected", null);
-			var ss = selected.Split('\t');
-			string path = ss[0];
+			var tag = GetSelectedTag();
 			//if (File.Exists(path))
-				Process.Start("EXPLORER.EXE", "/select,\"" + path + "\"");
+				Process.Start("EXPLORER.EXE", "/select,\"" + tag.Log.Name + "\"");
 			//else
 		}
 
@@ -599,7 +608,7 @@ namespace SpinningLog
 				var line = merged_lines[i];
 
 				// insert time span if more than 3000 msec
-				if (merged_lines.Count > 0) {
+				if (i > 0) {
 					var timespan = line.Time - LastTime;
 					if (timespan.TotalMilliseconds > Properties.Settings.Default.blank_msec)
 						html.AppendLine("<span class='blank'>" + TimeSpanString(timespan) + "</span>");

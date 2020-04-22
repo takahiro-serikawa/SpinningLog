@@ -68,8 +68,8 @@ label:hover {
 	<div id=merged>
 
 <!-- log lines are inserted here as following pre -->
-<pre><label style=color:red data-lineno=123>sample.log</label> 2020-4-12 22:15:11.123 sample line
-<label style=color:orange data-lineno=2045>SMPL.LOG</label> 2020-4-12 22:17:53.567 === LOG ===
+<pre><label style=color:red data-tag=1:23>sample.log</label> 2020-4-12 22:15:11.123 sample line
+<label style=color:orange data-tag=4:45>SMPL.LOG</label> 2020-4-12 22:17:53.567 === LOG ===
 <span class=blank>00:05:12 passed</span>
 <label></label> ...</pre>
 
@@ -81,7 +81,7 @@ label:hover {
 
 document.onkeyup = function (ev) {
 	// forward function key to main form
-	let fkey = { 35: 'end', 36: 'home' }[ev.which];
+	const fkey = { 35: 'end', 36: 'home' }[ev.which];
 	if (fkey) window.external.ComCommand(fkey, null)
 }
 
