@@ -119,16 +119,19 @@ namespace SpinningLog
 			}
 		}
 
-
 		void BlinkLive(DateTime now)
 		{
 			var timespan = DateTime.Now - this.LastTime;
 			webBrowser1.Document.GetElementById("latest").InnerHtml = TimeSpanString(timespan);
+			HtmlElement live = webBrowser1.Document.GetElementById("live");
 			if (log_files.Count > 0 && LiveMenu.Checked) {
-				//int v = 255 * now.Millisecond / 1000;
+				int v = 255 * now.Millisecond / 1000;
+				live.Style = string.Format("background: #{0:X2}{1:X2}{2:X2}", 255, 255-v, 255-v);
 				//LiveMenu.ForeColor = Color.FromArgb(255, 255-v, 255-v);
-			} else
-				;//LiveMenu.ForeColor = SystemColors.ControlText;
+			} else {
+				live.Style = "color: gray;";
+				//LiveMenu.ForeColor = SystemColors.ControlText;
+			}
 		}
 
 		private void timer1_Tick(object sender, EventArgs e)
@@ -171,10 +174,20 @@ namespace SpinningLog
 			public double blank_msec;
 
 			// APP
-			public class Editor {
+			public class Editor
+			{
 				public string exe;
 				public string options;
 				public int lineno0;
+				
+				public void Execute(Dictionary<string, object> symbols)
+				{
+					string options = this.options;
+					foreach (string key in symbols.Keys) {
+						options = options.Replace(key, symbols[key].ToString());
+					}
+					Process.Start(this.exe, options);
+				}
 			}
 			public Editor editor;
 
@@ -195,20 +208,20 @@ namespace SpinningLog
 				sett_filename = Path.GetDirectoryName(Application.LocalUserAppDataPath) + SLOG_EXT;
 			Debug.WriteLine("sett_filename={0}", sett_filename);
 
-			if (!Properties.Settings.Default.valid)
-				Properties.Settings.Default.Upgrade();
-
-			if (Properties.Settings.Default.win_width > 0) {
-				this.StartPosition = FormStartPosition.Manual;
-				this.Left = Properties.Settings.Default.win_left;
-				this.Top = Properties.Settings.Default.win_top;
-				this.Width = Properties.Settings.Default.win_width;
-				this.Height = Properties.Settings.Default.win_height;
-
-				var win_state = (FormWindowState)Properties.Settings.Default.win_state;
-				if (win_state != FormWindowState.Minimized)
-					this.WindowState = win_state;
-			}
+			//if (!Properties.Settings.Default.valid)
+			//	Properties.Settings.Default.Upgrade();
+			//
+			//if (Properties.Settings.Default.win_width > 0) {
+			//	this.StartPosition = FormStartPosition.Manual;
+			//	this.Left = Properties.Settings.Default.win_left;
+			//	this.Top = Properties.Settings.Default.win_top;
+			//	this.Width = Properties.Settings.Default.win_width;
+			//	this.Height = Properties.Settings.Default.win_height;
+			//
+			//	var win_state = (FormWindowState)Properties.Settings.Default.win_state;
+			//	if (win_state != FormWindowState.Minimized)
+			//		this.WindowState = win_state;
+			//}
 
 			if (File.Exists(sett_filename)) {
 				var serializer = new XmlSerializer(typeof(SpinningSett));
@@ -221,40 +234,45 @@ namespace SpinningLog
 			LogFilters = sett.log_filters.Split('|').ToList();
 			HighlightWords = sett.highlights;
 
-			string encoding = Properties.Settings.Default.def_encoding;
-			if (encoding == "")
-				encoding = "UTF-8";
+			//string encoding = Properties.Settings.Default.def_encoding;
+			//if (encoding == "")
+			//	encoding = "UTF-8";
 				//encoding = "Shift_JIS";
 			try {
-				LogFile.DefaultEncoding = Encoding.GetEncoding(encoding);				
+				LogFile.DefaultEncoding = Encoding.GetEncoding(sett.def_encoding);				
 			} catch (Exception ex) {
 				LogFile.DefaultEncoding = Encoding.UTF8;
 			}
 
-			editor_exe = Properties.Settings.Default.editor_exe;
-			editor_opt = Properties.Settings.Default.editor_opt;
-			editor_lineno0 = Properties.Settings.Default.editor_lineno0;
+			this.StartPosition = FormStartPosition.Manual;
+			this.Bounds = sett.win_bounds;
+			if (sett.FormWindowState != FormWindowState.Minimized)
+				this.WindowState = sett.FormWindowState;
+
+			//editor_exe = Properties.Settings.Default.editor_exe;
+			//editor_opt = Properties.Settings.Default.editor_opt;
+			//editor_lineno0 = Properties.Settings.Default.editor_lineno0;
 		}
 
 		void SaveSettings()
 		{
 			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(x => x.Name));
 
-			Properties.Settings.Default.win_state = (int)this.WindowState;
-			if (this.WindowState == FormWindowState.Normal) {
-				Properties.Settings.Default.win_left = this.Left;
-				Properties.Settings.Default.win_top = this.Top;
-				Properties.Settings.Default.win_width = this.Width;
-				Properties.Settings.Default.win_height = this.Height;
-			} else {
-				Properties.Settings.Default.win_left = this.RestoreBounds.Left;
-				Properties.Settings.Default.win_top = this.RestoreBounds.Top;
-				Properties.Settings.Default.win_width = this.RestoreBounds.Width;
-				Properties.Settings.Default.win_height = this.RestoreBounds.Height;
-			}
+			//Properties.Settings.Default.win_state = (int)this.WindowState;
+			//if (this.WindowState == FormWindowState.Normal) {
+			//	Properties.Settings.Default.win_left = this.Left;
+			//	Properties.Settings.Default.win_top = this.Top;
+			//	Properties.Settings.Default.win_width = this.Width;
+			//	Properties.Settings.Default.win_height = this.Height;
+			//} else {
+			//	Properties.Settings.Default.win_left = this.RestoreBounds.Left;
+			//	Properties.Settings.Default.win_top = this.RestoreBounds.Top;
+			//	Properties.Settings.Default.win_width = this.RestoreBounds.Width;
+			//	Properties.Settings.Default.win_height = this.RestoreBounds.Height;
+			//}
 
-			Properties.Settings.Default.valid = true;
-			Properties.Settings.Default.Save();
+			//Properties.Settings.Default.valid = true;
+			//Properties.Settings.Default.Save();
 
 			// 
 			sett.FormWindowState = this.WindowState;
@@ -362,18 +380,28 @@ namespace SpinningLog
 			Console.WriteLine("LiveMenu.CHecked = {0}", LiveMenu.Checked);
 		}
 
-		string editor_exe = @"C:\Users\takah\AppData\Local\Programs\Microsoft VS Code\Code.exe";
-		string editor_opt = @"--goto {0}:{1}";
-		int editor_lineno0 = 1;
+		//string editor_exe = @"C:\Users\takah\AppData\Local\Programs\Microsoft VS Code\Code.exe";
+		//string editor_opt = @"--goto {0}:{1}";
+		//int editor_lineno0 = 1;
 
 		private void TagJumpMenu_Click(object sender, EventArgs e)
 		{
+			Cursor.Current = Cursors.WaitCursor;
 			var tag = GetSelectedTag();
-			Process.Start(editor_exe, string.Format(editor_opt, "\""+tag.Log.Name+"\"", editor_lineno0 + tag.LineNo));
+			Dictionary<string, object> symbols = new Dictionary<string, object>()
+			{
+				{ "{0}", tag.Log.Name },
+				{ "${FILENAME}", tag.Log.Name },
+				{ "{1}",  1+tag.LineNo },
+				{ "${LINENO}",  1+tag.LineNo },
+				{ "${LINENO0}",  tag.LineNo }
+			};
+			sett.editor.Execute(symbols);
 		}
 
 		private void ShowInExplorerMenu_Click(object sender, EventArgs e)
 		{
+			Cursor.Current = Cursors.WaitCursor;
 			var tag = GetSelectedTag();
 			Process.Start("EXPLORER.EXE", "/select,\"" + tag.Log.Name + "\"");
 		}
@@ -674,9 +702,9 @@ namespace SpinningLog
 				// insert time span if more than 3000 msec
 				if (i > 0) {
 					var timespan = line.Time - LastTime;
-					if (timespan.TotalMilliseconds > Properties.Settings.Default.blank_msec)
+					if (timespan.TotalMilliseconds > sett.blank_msec)
 						html.AppendLine("<span class='blank'>" + TimeSpanString(timespan) + "</span>");
-					else if (timespan.TotalMilliseconds < -Properties.Settings.Default.blank_msec)
+					else if (timespan.TotalMilliseconds < -sett.blank_msec)
 						html.AppendLine("<span class='blank back'>" + TimeSpanString(timespan) + "</span>");
 				}
 				LastTime = line.Time;
