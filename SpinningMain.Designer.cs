@@ -31,7 +31,7 @@
 			this.webBrowser1 = new System.Windows.Forms.WebBrowser();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.FileNewMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.AppNewMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.FileOpenMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.FileCloseMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.FileCloseAllMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,13 +44,14 @@
 			this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.BackToTopMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ViewHomeMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.LiveMenu = new System.Windows.Forms.ToolStripMenuItem();
-			this.TagJumpMenu = new System.Windows.Forms.ToolStripMenuItem();
-			this.ShowInExplorerMenu = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
 			this.ViewReloadMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.ViewClearMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+			this.TagJumpMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ShowInExplorerMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.HelpAboutMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
@@ -58,6 +59,7 @@
 			this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
 			this.LiveTimer = new System.Windows.Forms.Timer(this.components);
 			this.DropPanel = new System.Windows.Forms.Panel();
+			this.fontDialog1 = new System.Windows.Forms.FontDialog();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -87,7 +89,7 @@
 			// fileToolStripMenuItem
 			// 
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.FileNewMenu,
+            this.AppNewMenu,
             this.FileOpenMenu,
             this.FileCloseMenu,
             this.FileCloseAllMenu,
@@ -99,20 +101,20 @@
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.fileToolStripMenuItem.Text = "&File";
 			// 
-			// FileNewMenu
+			// AppNewMenu
 			// 
-			this.FileNewMenu.Name = "FileNewMenu";
-			this.FileNewMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-			this.FileNewMenu.Size = new System.Drawing.Size(175, 22);
-			this.FileNewMenu.Text = "&New ...";
-			this.FileNewMenu.ToolTipText = "SpinningLogをもう一つ開く";
-			this.FileNewMenu.Click += new System.EventHandler(this.FileNewMenu_Click);
+			this.AppNewMenu.Name = "AppNewMenu";
+			this.AppNewMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
+			this.AppNewMenu.Size = new System.Drawing.Size(180, 22);
+			this.AppNewMenu.Text = "&New ...";
+			this.AppNewMenu.ToolTipText = "SpinningLogをもう一つ開く";
+			this.AppNewMenu.Click += new System.EventHandler(this.AppNewMenu_Click);
 			// 
 			// FileOpenMenu
 			// 
 			this.FileOpenMenu.Name = "FileOpenMenu";
 			this.FileOpenMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-			this.FileOpenMenu.Size = new System.Drawing.Size(175, 22);
+			this.FileOpenMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileOpenMenu.Text = "&Open ...";
 			this.FileOpenMenu.ToolTipText = "ログファイルを追加";
 			this.FileOpenMenu.Click += new System.EventHandler(this.FileOpenMenu_Click);
@@ -121,14 +123,14 @@
 			// 
 			this.FileCloseMenu.Name = "FileCloseMenu";
 			this.FileCloseMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
-			this.FileCloseMenu.Size = new System.Drawing.Size(175, 22);
+			this.FileCloseMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileCloseMenu.Text = "&Close";
 			this.FileCloseMenu.Click += new System.EventHandler(this.FileCloseMenu_Click);
 			// 
 			// FileCloseAllMenu
 			// 
 			this.FileCloseAllMenu.Name = "FileCloseAllMenu";
-			this.FileCloseAllMenu.Size = new System.Drawing.Size(175, 22);
+			this.FileCloseAllMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileCloseAllMenu.Text = "C&lose All";
 			this.FileCloseAllMenu.ToolTipText = "すべてのログファイルを閉じる";
 			this.FileCloseAllMenu.Click += new System.EventHandler(this.FileCloseAllMenu_Click);
@@ -137,7 +139,7 @@
 			// 
 			this.FileExportMenu.Name = "FileExportMenu";
 			this.FileExportMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-			this.FileExportMenu.Size = new System.Drawing.Size(175, 22);
+			this.FileExportMenu.Size = new System.Drawing.Size(180, 22);
 			this.FileExportMenu.Text = "Export ...";
 			this.FileExportMenu.ToolTipText = "マージしたログをテキストファイルに書き出す";
 			this.FileExportMenu.Click += new System.EventHandler(this.FileExportMenu_Click);
@@ -145,20 +147,21 @@
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(172, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
 			// 
 			// AppExitMenu
 			// 
 			this.AppExitMenu.Name = "AppExitMenu";
-			this.AppExitMenu.Size = new System.Drawing.Size(175, 22);
+			this.AppExitMenu.Size = new System.Drawing.Size(180, 22);
 			this.AppExitMenu.Text = "e&Xit";
 			this.AppExitMenu.ToolTipText = "終了";
 			this.AppExitMenu.Click += new System.EventHandler(this.AppExitMenu_Click);
 			// 
 			// ExportHtmlMenu
 			// 
+			this.ExportHtmlMenu.ForeColor = System.Drawing.Color.Maroon;
 			this.ExportHtmlMenu.Name = "ExportHtmlMenu";
-			this.ExportHtmlMenu.Size = new System.Drawing.Size(175, 22);
+			this.ExportHtmlMenu.Size = new System.Drawing.Size(180, 22);
 			this.ExportHtmlMenu.Text = "debug: export html";
 			this.ExportHtmlMenu.Visible = false;
 			this.ExportHtmlMenu.Click += new System.EventHandler(this.ExportHtmlMenu_Click);
@@ -177,46 +180,47 @@
 			// 
 			this.findTextToolStripMenuItem.Enabled = false;
 			this.findTextToolStripMenuItem.Name = "findTextToolStripMenuItem";
-			this.findTextToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+			this.findTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.findTextToolStripMenuItem.Text = "&Find Text";
 			// 
 			// undoToolStripMenuItem
 			// 
 			this.undoToolStripMenuItem.Enabled = false;
 			this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
-			this.undoToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+			this.undoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.undoToolStripMenuItem.Text = "&Undo";
 			// 
 			// copyToolStripMenuItem
 			// 
 			this.copyToolStripMenuItem.Enabled = false;
 			this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-			this.copyToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+			this.copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.copyToolStripMenuItem.Text = "&Copy";
 			// 
 			// viewToolStripMenuItem
 			// 
 			this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.BackToTopMenu,
+            this.ViewHomeMenu,
             this.LiveMenu,
             this.ViewReloadMenu,
             this.ViewClearMenu,
             this.toolStripMenuItem2,
             this.TagJumpMenu,
-            this.ShowInExplorerMenu});
+            this.ShowInExplorerMenu,
+            this.fontToolStripMenuItem});
 			this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
 			this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
 			this.viewToolStripMenuItem.Text = "&View";
 			// 
-			// BackToTopMenu
+			// ViewHomeMenu
 			// 
-			this.BackToTopMenu.Name = "BackToTopMenu";
-			this.BackToTopMenu.ShortcutKeyDisplayString = "HOME";
-			this.BackToTopMenu.Size = new System.Drawing.Size(180, 22);
-			this.BackToTopMenu.Tag = "";
-			this.BackToTopMenu.Text = "Back to &Top";
-			this.BackToTopMenu.ToolTipText = "先頭行にスクロールして、 LIVE 表示を停止";
-			this.BackToTopMenu.Click += new System.EventHandler(this.BackToTopMenu_Click);
+			this.ViewHomeMenu.Name = "ViewHomeMenu";
+			this.ViewHomeMenu.ShortcutKeyDisplayString = "HOME";
+			this.ViewHomeMenu.Size = new System.Drawing.Size(180, 22);
+			this.ViewHomeMenu.Tag = "";
+			this.ViewHomeMenu.Text = "Back to &Top";
+			this.ViewHomeMenu.ToolTipText = "先頭行にスクロールして、 LIVE 表示を停止";
+			this.ViewHomeMenu.Click += new System.EventHandler(this.ViewHomeMenu_Click);
 			// 
 			// LiveMenu
 			// 
@@ -230,27 +234,6 @@
 			this.LiveMenu.ToolTipText = "ログファイルを監視";
 			this.LiveMenu.CheckedChanged += new System.EventHandler(this.LiveMenu_CheckedChanged);
 			this.LiveMenu.Click += new System.EventHandler(this.LiveMenu_Click);
-			// 
-			// TagJumpMenu
-			// 
-			this.TagJumpMenu.Name = "TagJumpMenu";
-			this.TagJumpMenu.ShortcutKeys = System.Windows.Forms.Keys.F9;
-			this.TagJumpMenu.Size = new System.Drawing.Size(180, 22);
-			this.TagJumpMenu.Text = "Tag &Jump ...";
-			this.TagJumpMenu.Click += new System.EventHandler(this.TagJumpMenu_Click);
-			// 
-			// ShowInExplorerMenu
-			// 
-			this.ShowInExplorerMenu.Name = "ShowInExplorerMenu";
-			this.ShowInExplorerMenu.ShortcutKeys = System.Windows.Forms.Keys.F10;
-			this.ShowInExplorerMenu.Size = new System.Drawing.Size(180, 22);
-			this.ShowInExplorerMenu.Text = "&Explorer ...";
-			this.ShowInExplorerMenu.Click += new System.EventHandler(this.ShowInExplorerMenu_Click);
-			// 
-			// toolStripMenuItem2
-			// 
-			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-			this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
 			// 
 			// ViewReloadMenu
 			// 
@@ -270,6 +253,32 @@
 			this.ViewClearMenu.ToolTipText = "画面表示のみクリア";
 			this.ViewClearMenu.Click += new System.EventHandler(this.ViewClearMenu_Click);
 			// 
+			// toolStripMenuItem2
+			// 
+			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+			this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
+			// 
+			// TagJumpMenu
+			// 
+			this.TagJumpMenu.Name = "TagJumpMenu";
+			this.TagJumpMenu.ShortcutKeys = System.Windows.Forms.Keys.F9;
+			this.TagJumpMenu.Size = new System.Drawing.Size(180, 22);
+			this.TagJumpMenu.Text = "Tag &Jump ...";
+			this.TagJumpMenu.Click += new System.EventHandler(this.TagJumpMenu_Click);
+			// 
+			// ShowInExplorerMenu
+			// 
+			this.ShowInExplorerMenu.Name = "ShowInExplorerMenu";
+			this.ShowInExplorerMenu.ShortcutKeys = System.Windows.Forms.Keys.F10;
+			this.ShowInExplorerMenu.Size = new System.Drawing.Size(180, 22);
+			this.ShowInExplorerMenu.Text = "&Explorer ...";
+			this.ShowInExplorerMenu.Click += new System.EventHandler(this.ShowInExplorerMenu_Click);
+			// 
+			// fontToolStripMenuItem
+			// 
+			this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
+			this.fontToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			// 
 			// helpToolStripMenuItem
 			// 
 			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -280,9 +289,8 @@
 			// 
 			// HelpAboutMenu
 			// 
-			this.HelpAboutMenu.Enabled = false;
 			this.HelpAboutMenu.Name = "HelpAboutMenu";
-			this.HelpAboutMenu.Size = new System.Drawing.Size(177, 22);
+			this.HelpAboutMenu.Size = new System.Drawing.Size(180, 22);
 			this.HelpAboutMenu.Text = "&About SpinningLog";
 			this.HelpAboutMenu.ToolTipText = "バージョン情報を表示";
 			this.HelpAboutMenu.Click += new System.EventHandler(this.HelpAboutMenu_Click);
@@ -319,9 +327,9 @@
 			this.DropPanel.AllowDrop = true;
 			this.DropPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.DropPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.DropPanel.Location = new System.Drawing.Point(0, 24);
+			this.DropPanel.Location = new System.Drawing.Point(0, 0);
 			this.DropPanel.Name = "DropPanel";
-			this.DropPanel.Size = new System.Drawing.Size(800, 400);
+			this.DropPanel.Size = new System.Drawing.Size(800, 424);
 			this.DropPanel.TabIndex = 3;
 			this.DropPanel.DragDrop += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragDrop);
 			this.DropPanel.DragOver += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragOver);
@@ -333,11 +341,11 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.ClientSize = new System.Drawing.Size(800, 424);
 			this.Controls.Add(this.webBrowser1);
-			this.Controls.Add(this.DropPanel);
 			this.Controls.Add(this.menuStrip1);
+			this.Controls.Add(this.DropPanel);
 			this.Font = new System.Drawing.Font("Yu Gothic UI", 9F);
 			this.MainMenuStrip = this.menuStrip1;
-			this.MinimumSize = new System.Drawing.Size(300, 100);
+			this.MinimumSize = new System.Drawing.Size(500, 120);
 			this.Name = "SpinningMain";
 			this.Text = "spinnin\' log";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SpinningMain_FormClosing);
@@ -356,7 +364,7 @@
 		private System.Windows.Forms.WebBrowser webBrowser1;
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem FileNewMenu;
+		private System.Windows.Forms.ToolStripMenuItem AppNewMenu;
 		private System.Windows.Forms.ToolStripMenuItem FileOpenMenu;
 		private System.Windows.Forms.ToolStripMenuItem FileCloseMenu;
 		private System.Windows.Forms.ToolStripMenuItem FileCloseAllMenu;
@@ -374,7 +382,7 @@
 		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
 		private System.Windows.Forms.Timer LiveTimer;
 		private System.Windows.Forms.Panel DropPanel;
-		private System.Windows.Forms.ToolStripMenuItem BackToTopMenu;
+		private System.Windows.Forms.ToolStripMenuItem ViewHomeMenu;
 		private System.Windows.Forms.ToolStripMenuItem LiveMenu;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
 		private System.Windows.Forms.ToolStripMenuItem TagJumpMenu;
@@ -383,6 +391,8 @@
 		private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem ExportHtmlMenu;
+		private System.Windows.Forms.ToolStripMenuItem fontToolStripMenuItem;
+		private System.Windows.Forms.FontDialog fontDialog1;
 	}
 }
 

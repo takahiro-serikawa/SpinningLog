@@ -8,5 +8,20 @@
     <Setting Name="valid" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="editor_exe" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Users\takah\AppData\Local\Programs\Microsoft VS Code\Code.exe</Value>
+    </Setting>
+    <Setting Name="editor_goto_option" Type="System.String" Scope="User">
+      <Value Profile="(Default)">--goto ${FILENAME}:${LINENO1}</Value>
+    </Setting>
+    <Setting Name="log_filters" Type="System.String" Scope="User">
+      <Value Profile="(Default)">*.txt|*.log</Value>
+    </Setting>
+    <Setting Name="highlights" Type="System.String" Scope="User">
+      <Value Profile="(Default)">error|failed|fail|cannot|can not|can't</Value>
+    </Setting>
+    <Setting Name="last_sett" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

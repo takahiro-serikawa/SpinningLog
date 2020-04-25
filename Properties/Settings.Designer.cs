@@ -46,5 +46,65 @@ namespace SpinningLog.Properties {
                 this["valid"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\takah\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe")]
+        public string editor_exe {
+            get {
+                return ((string)(this["editor_exe"]));
+            }
+            set {
+                this["editor_exe"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("--goto ${FILENAME}:${LINENO1}")]
+        public string editor_goto_option {
+            get {
+                return ((string)(this["editor_goto_option"]));
+            }
+            set {
+                this["editor_goto_option"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("*.txt|*.log")]
+        public string log_filters {
+            get {
+                return ((string)(this["log_filters"]));
+            }
+            set {
+                this["log_filters"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("error|failed|fail|cannot|can not|can\'t")]
+        public string highlights {
+            get {
+                return ((string)(this["highlights"]));
+            }
+            set {
+                this["highlights"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string last_sett {
+            get {
+                return ((string)(this["last_sett"]));
+            }
+            set {
+                this["last_sett"] = value;
+            }
+        }
     }
 }

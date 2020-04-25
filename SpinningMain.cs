@@ -27,7 +27,7 @@ namespace SpinningLog
 		{
 			InitializeComponent();
 #if DEBUG
-			// redirect Debug log to file
+			// redirect debug log to file
 			var dtl = (DefaultTraceListener)Debug.Listeners["Default"];
 			dtl.LogFileName = Path.ChangeExtension(Application.ExecutablePath, "log");
 			ExportHtmlMenu.Visible = true;
@@ -36,7 +36,7 @@ namespace SpinningLog
 #endif
 
 			var asm = System.Reflection.Assembly.GetExecutingAssembly();
-			
+
 			webBrowser1.ObjectForScripting = new ComOperation(this);
 			webBrowser1.DocumentCompleted += (wb, e1) => {
 				// show title and version
@@ -45,16 +45,24 @@ namespace SpinningLog
 				  (webBrowser1.DocumentTitle != "") ? webBrowser1.DocumentTitle : this.Text,
 				  ver.Major, ver.Minor);
 
-
 				// panel takes over drag events, WebBrowser is not supported.
 				webBrowser1.Document.Body.DragOver += (body, e2) => {
 					DropPanel.BringToFront();
 				};
 
+				LiveMenu.Checked = sett.live;
+
 				webBrowser1.Document.GetElementById("merged").InnerHtml = "";
 				//webBrowser1.Visible = false;
+				DropPanel.BringToFront();
 				RefreshMerged();
 				//webBrowser1.Visible = true;
+
+#if DEBUG
+				HtmlElement debug = webBrowser1.Document.GetElementById("debug");
+				if (debug != null)
+					debug.Style = "display:block";
+#endif
 			};
 
 			// load "empty.html" from resource
@@ -67,6 +75,10 @@ namespace SpinningLog
 			RestoreSettings();
 		}
 
+		/// <summary>
+		/// Parse command line arguments.
+		/// </summary>
+		/// <param name="args">Command line arguments</param>
 		void ParseCommandLine(string[] args)
 		{
 			bool opt_new = false;
@@ -106,7 +118,7 @@ namespace SpinningLog
 
 		private void SpinningMain_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			Debug.WriteLine("FormClosing({0})", e.CloseReason);
+			//Debug.WriteLine("FormClosing({0})", e.CloseReason);
 		}
 
 		private void SpinningMain_FormClosed(object sender, FormClosedEventArgs e)
@@ -119,160 +131,144 @@ namespace SpinningLog
 			}
 		}
 
-		void BlinkLive(DateTime now)
+		/// <summary>
+		/// Convert timespan to string by application setting
+		/// </summary>
+		/// <param name="timespan">Time span to convert</param>
+		/// <returns>Converted string</returns>
+		string Format(TimeSpan timespan)
 		{
-			var timespan = DateTime.Now - this.LastTime;
-			webBrowser1.Document.GetElementById("latest").InnerHtml = TimeSpanString(timespan);
-			HtmlElement live = webBrowser1.Document.GetElementById("live");
-			if (log_files.Count > 0 && LiveMenu.Checked) {
-				int v = 255 * now.Millisecond / 1000;
-				live.Style = string.Format("background: #{0:X2}{1:X2}{2:X2}", 255, 255-v, 255-v);
-				//LiveMenu.ForeColor = Color.FromArgb(255, 255-v, 255-v);
-			} else {
-				live.Style = "color: gray;";
-				//LiveMenu.ForeColor = SystemColors.ControlText;
-			}
+			string s = timespan.ToString(@"h\:mm\:ss\.fff");
+			if (timespan.Days != 0)
+				return string.Format("{0} days and\n", timespan.Days) + s;
+			return s;
 		}
 
 		private void timer1_Tick(object sender, EventArgs e)
 		{
-			var now = DateTime.Now;
 			try {
-				BlinkLive(now);
-
+				// refresh last time
+				var timespan = DateTime.Now - this.LastTime;
+				HtmlElement latest = webBrowser1.Document.GetElementById("latest");
+				latest.InnerHtml = Format(timespan);
 			} catch (Exception ex) {
 				Debug.WriteLine("timer1_Tick: {0}", ex.Message);
 			}
 		}
 
-		// aplication settings
+		/// <summary>
+		/// SpinningLog aplication settings
+		/// </summary>
 		public class SpinningSett
 		{
-			public SpinningSett() 
+			public SpinningSett()
 			{
 				// default values
-				FormWindowState = FormWindowState.Normal;
-				//def_encoding = "UTF-8";
-				def_encoding = "Shift_JIS";
+				def_encoding = "UTF-8";
+				//def_encoding = "Shift_JIS";
 				blank_msec = 3000;
-
-				// app default
-				editor = new Editor();
-				editor.exe = @"C:\Users\takah\AppData\Local\Programs\Microsoft VS Code\Code.exe";
-				editor.options = @"--goto {0}:{1}";
-				editor.lineno0 = 1;
-
-				log_filters = "*.log|*.txt";
 				highlights = "error|failed|fail|cannot|can not|can't";
+				log_filters = new string[] { "*.log", "*.txt" };
 			}
 
+			[DefaultValueAttribute(FormWindowState.Normal)]
 			public FormWindowState FormWindowState;
-			public Rectangle win_bounds;
 
-			//public Encoding def_encoding;
-			public string def_encoding;
-			public double blank_msec;
+			public Rectangle win_bounds;    // bounds of main form 
+			public string def_encoding;     // log file default encoding
+			public double blank_msec;       // 
+			public string[] log_filters;    // wildcard recognized as log files
+			public string highlights;       // highlight keywords as Regex
+			public bool live;               // live refresh mode
 
-			// APP
-			public class Editor
-			{
-				public string exe;
-				public string options;
-				public int lineno0;
-				
-				public void Execute(Dictionary<string, object> symbols)
-				{
-					string options = this.options;
-					foreach (string key in symbols.Keys) {
-						options = options.Replace(key, symbols[key].ToString());
-					}
-					Process.Start(this.exe, options);
-				}
-			}
-			public Editor editor;
-
-			public string log_filters;
-			public string highlights;
+			public string html_file = "";
 		}
 
 		SpinningSett sett = new SpinningSett();
 		string sett_filename = "";
 		const string SLOG_EXT = ".slog";
 
+		/// <summary>
+		/// External text editor setting
+		/// </summary>
+		public class EditorSett
+		{
+			public string exe;
+			public string goto_option;
+
+			/// <summary>
+			/// Open log with text editor.
+			/// </summary>
+			/// <param name="macros">Expanded macro, set of name-value pairs</param>
+			public void Execute(Dictionary<string, object> macros)
+			{
+				Cursor.Current = Cursors.WaitCursor;
+				string options = this.goto_option;
+				foreach (string key in macros.Keys) {
+					options = options.Replace(key, macros[key].ToString());
+				}
+				Process.Start(this.exe, options);
+			}
+		}
+
+		EditorSett editor = new EditorSett();
+
+		/// <summary>
+		/// Restore application settings.
+		/// </summary>
 		void RestoreSettings()
 		{
-			string s = Path.ChangeExtension(Application.ExecutablePath, SLOG_EXT);
-			if (File.Exists(s))
-				sett_filename = s;
-			else
+			if (!Properties.Settings.Default.valid)
+				Properties.Settings.Default.Upgrade();
+
+			editor.exe = Properties.Settings.Default.editor_exe;
+			editor.goto_option = Properties.Settings.Default.editor_goto_option;
+
+			// select setting file path
+			sett_filename = Path.ChangeExtension(Application.ExecutablePath, SLOG_EXT);
+			if (!File.Exists(sett_filename))
 				sett_filename = Path.GetDirectoryName(Application.LocalUserAppDataPath) + SLOG_EXT;
-			Debug.WriteLine("sett_filename={0}", sett_filename);
+			Debug.WriteLine("sett_filename=" + sett_filename);
 
-			//if (!Properties.Settings.Default.valid)
-			//	Properties.Settings.Default.Upgrade();
-			//
-			//if (Properties.Settings.Default.win_width > 0) {
-			//	this.StartPosition = FormStartPosition.Manual;
-			//	this.Left = Properties.Settings.Default.win_left;
-			//	this.Top = Properties.Settings.Default.win_top;
-			//	this.Width = Properties.Settings.Default.win_width;
-			//	this.Height = Properties.Settings.Default.win_height;
-			//
-			//	var win_state = (FormWindowState)Properties.Settings.Default.win_state;
-			//	if (win_state != FormWindowState.Minimized)
-			//		this.WindowState = win_state;
-			//}
-
-			if (File.Exists(sett_filename)) {
+			try {
 				var serializer = new XmlSerializer(typeof(SpinningSett));
 				using (var sr = new StreamReader(sett_filename, Encoding.UTF8)) {
 					sett = (SpinningSett)serializer.Deserialize(sr);
 				}
-			} else
-				sett = new SpinningSett();
-
-			LogFilters = sett.log_filters.Split('|').ToList();
-			HighlightWords = sett.highlights;
-
-			//string encoding = Properties.Settings.Default.def_encoding;
-			//if (encoding == "")
-			//	encoding = "UTF-8";
-				//encoding = "Shift_JIS";
-			try {
-				LogFile.DefaultEncoding = Encoding.GetEncoding(sett.def_encoding);				
 			} catch (Exception ex) {
+				Debug.WriteLine(ex.Message);
+				sett = new SpinningSett();
+			}
+
+			try {
+				LogFile.DefaultEncoding = Encoding.GetEncoding(sett.def_encoding);
+			} catch (Exception ex) {
+				Debug.WriteLine(ex.Message);
 				LogFile.DefaultEncoding = Encoding.UTF8;
 			}
 
-			this.StartPosition = FormStartPosition.Manual;
-			this.Bounds = sett.win_bounds;
-			if (sett.FormWindowState != FormWindowState.Minimized)
-				this.WindowState = sett.FormWindowState;
+			if (sett.win_bounds.Width > 0) {
+				this.StartPosition = FormStartPosition.Manual;
+				this.Bounds = sett.win_bounds;
+				if (sett.FormWindowState != FormWindowState.Minimized)
+					this.WindowState = sett.FormWindowState;
+			}
 
-			//editor_exe = Properties.Settings.Default.editor_exe;
-			//editor_opt = Properties.Settings.Default.editor_opt;
-			//editor_lineno0 = Properties.Settings.Default.editor_lineno0;
+			//LiveMenu.Checked = sett.live; -> after DocumentCompleted()
 		}
 
+		/// <summary>
+		/// Save application settings.
+		/// </summary>
 		void SaveSettings()
 		{
-			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(x => x.Name));
+			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(l => l.Name));
 
-			//Properties.Settings.Default.win_state = (int)this.WindowState;
-			//if (this.WindowState == FormWindowState.Normal) {
-			//	Properties.Settings.Default.win_left = this.Left;
-			//	Properties.Settings.Default.win_top = this.Top;
-			//	Properties.Settings.Default.win_width = this.Width;
-			//	Properties.Settings.Default.win_height = this.Height;
-			//} else {
-			//	Properties.Settings.Default.win_left = this.RestoreBounds.Left;
-			//	Properties.Settings.Default.win_top = this.RestoreBounds.Top;
-			//	Properties.Settings.Default.win_width = this.RestoreBounds.Width;
-			//	Properties.Settings.Default.win_height = this.RestoreBounds.Height;
-			//}
+			Properties.Settings.Default.editor_exe = editor.exe;
+			Properties.Settings.Default.editor_goto_option = editor.goto_option;
 
-			//Properties.Settings.Default.valid = true;
-			//Properties.Settings.Default.Save();
+			Properties.Settings.Default.valid = true;
+			Properties.Settings.Default.Save();
 
 			// 
 			sett.FormWindowState = this.WindowState;
@@ -281,6 +277,8 @@ namespace SpinningLog
 			else
 				sett.win_bounds = this.RestoreBounds;
 			sett.def_encoding = LogFile.DefaultEncoding.WebName;
+			sett.live = LiveMenu.Checked;
+
 			var serializer = new XmlSerializer(typeof(SpinningSett));
 			using (var sw = new StreamWriter(sett_filename, false, Encoding.UTF8)) {
 				serializer.Serialize(sw, sett);
@@ -289,7 +287,7 @@ namespace SpinningLog
 
 		// menu handlers
 
-		private void FileNewMenu_Click(object sender, EventArgs e)
+		private void AppNewMenu_Click(object sender, EventArgs e)
 		{
 			Process.Start(Application.ExecutablePath, "--new");
 		}
@@ -303,43 +301,27 @@ namespace SpinningLog
 			}
 		}
 
-		struct TagData
-		{
-			public LogFile Log;
-			public int LineNo;
-			public TagData(LogFile log, int no)
-			{
-				this.Log = log;
-				this.LineNo = no;
-			}
-		}
-
-		TagData GetSelectedTag()
-		{
-			string tag = (string)CallJavaScript("GetLastSelected", null);
-			var ss = tag.Split(':');
-			var log = log_files.Find(x => x.ID == ss[0]);
-			int lineno = int.Parse(ss[1]);
-			return new TagData(log, lineno);
-		}
-
 		private void FileCloseMenu_Click(object sender, EventArgs e)
 		{
 			var tag = GetSelectedTag();
-			log_files.Remove(tag.Log);
-			Reload();
+			if (tag != null) {
+				log_files.Remove(tag.Log);
+				ReloadAll();
+			}
 		}
 
 		private void FileCloseAllMenu_Click(object sender, EventArgs e)
 		{
 			Cursor.Current = Cursors.WaitCursor;
-			Clear();
+			log_files.Clear();
+			merged_lines.Clear();
+			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
 		}
 
 		private void FileExportMenu_Click(object sender, EventArgs e)
 		{
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK) {
-				var div = webBrowser1.Document.GetElementById("merged");
+				HtmlElement div = webBrowser1.Document.GetElementById("merged");
 				File.WriteAllText(saveFileDialog1.FileName, div.InnerText);
 			}
 		}
@@ -352,73 +334,79 @@ namespace SpinningLog
 
 		private void ViewReloadMenu_Click(object sender, EventArgs e)
 		{
-			Reload();
+			ReloadAll();
 		}
 
 		private void ViewClearMenu_Click(object sender, EventArgs e)
 		{
+			Cursor.Current = Cursors.WaitCursor;
 			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
 		}
 
-		public void BackToTopMenu_Click(object sender, EventArgs e)
+		// scroll to top, and stop live refresh
+		public void ViewHomeMenu_Click(object sender, EventArgs e)
 		{
 			LiveMenu.Checked = false;
 
 			webBrowser1.Document.Window.ScrollTo(0, 0);
 		}
 
+		// scroll to bottom, and toggle live refresh
 		public void LiveMenu_Click(object sender, EventArgs e)
 		{
-			LiveMenu.Checked = !LiveMenu.Checked;
-
-			var div = webBrowser1.Document.GetElementById("merged");
+			HtmlElement div = webBrowser1.Document.GetElementById("merged");
 			webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
 		}
 
 		private void LiveMenu_CheckedChanged(object sender, EventArgs e)
 		{
-			Console.WriteLine("LiveMenu.CHecked = {0}", LiveMenu.Checked);
+			HtmlElement live = webBrowser1.Document.GetElementById("live");
+			if (/*log_files.Count > 0 && */LiveMenu.Checked)
+				live.SetAttribute("className", "active");
+			else
+				live.SetAttribute("className", "");
 		}
 
-		//string editor_exe = @"C:\Users\takah\AppData\Local\Programs\Microsoft VS Code\Code.exe";
-		//string editor_opt = @"--goto {0}:{1}";
-		//int editor_lineno0 = 1;
-
+		// open another text editor
 		private void TagJumpMenu_Click(object sender, EventArgs e)
 		{
-			Cursor.Current = Cursors.WaitCursor;
-			var tag = GetSelectedTag();
-			Dictionary<string, object> symbols = new Dictionary<string, object>()
-			{
-				{ "{0}", tag.Log.Name },
-				{ "${FILENAME}", tag.Log.Name },
-				{ "{1}",  1+tag.LineNo },
-				{ "${LINENO}",  1+tag.LineNo },
-				{ "${LINENO0}",  tag.LineNo }
-			};
-			sett.editor.Execute(symbols);
+			DataTag tag = GetSelectedTag();
+			if (tag != null) {
+				Dictionary<string, object> macros = new Dictionary<string, object>()
+				{
+					{ "${FILENAME}", tag.Log.Name },
+					{ "${LINENO}",  1+tag.LineNo },
+					{ "${LINENO1}",  1+tag.LineNo },
+					{ "${LINENO0}",  tag.LineNo }
+				};
+				editor.Execute(macros);
+			}
 		}
 
+		// open Windows Explorer
 		private void ShowInExplorerMenu_Click(object sender, EventArgs e)
 		{
-			Cursor.Current = Cursors.WaitCursor;
 			var tag = GetSelectedTag();
-			Process.Start("EXPLORER.EXE", "/select,\"" + tag.Log.Name + "\"");
+			if (tag != null) {
+				Cursor.Current = Cursors.WaitCursor;
+				Process.Start("EXPLORER.EXE", "/select,\"" + tag.Log.Name + "\"");
+			}
 		}
 
+		// show application information
 		private void HelpAboutMenu_Click(object sender, EventArgs e)
 		{
-			throw new Exception("no implement");
+			//throw new Exception("no implement");
+			DropPanel.BringToFront();
 		}
 
+		// quit SpinningLog application
 		private void AppExitMenu_Click(object sender, EventArgs e)
 		{
 			this.Close();
 		}
 
-
 		// drag and drop
-
 		private void SpinningMain_DragOver(object sender, DragEventArgs e)
 		{
 			if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -439,7 +427,9 @@ namespace SpinningLog
 			DropPanel.SendToBack();
 		}
 
-		// interface between main form and WebBrowser
+		/// <summary>
+		/// Interface between main form and WebBrowser 
+		/// </summary>
 		[ComVisible(true)]
 		public class ComOperation
 		{
@@ -455,10 +445,12 @@ namespace SpinningLog
 			{
 				switch (command) {
 				case "home":
-					main.BackToTopMenu_Click(null, null); 
+					main.ViewHomeMenu_Click(null, null);
 					break;
 				case "end":
-					main.LiveMenu_Click(null, null); 
+				case "live-toggle":
+					//main.LiveMenu_Click(null, null); 
+					main.LiveMenu.Checked = !main.LiveMenu.Checked;
 					break;
 				case "select":
 					//MessageBox.Show("select:"+option);
@@ -467,31 +459,79 @@ namespace SpinningLog
 			}
 		}
 
+		class DataTag
+		{
+			public LogFile Log;
+			public int LineNo;
+			public DataTag(LogFile log, int lineno)
+			{
+				this.Log = log;
+				this.LineNo = lineno;
+			}
+
+			public DataTag(LogLine line)
+			{
+				this.Log = line.File;
+				this.LineNo = line.LineNo;
+			}
+
+			public new string ToString()
+			{
+				return Log.ID + ":" + LineNo;
+			}
+		}
+
+		/// <summary>
+		/// Call javascript function in WebBrowser.
+		/// </summary>
+		/// <param name="funcname">Function name to call</param>
+		/// <param name="args">Collection of parameters</param>
+		/// <returns>Return value from called function</returns>
 		object CallJavaScript(string funcname, string[] args)
 		{
 			return webBrowser1.Document.InvokeScript(funcname, args);
 		}
 
+		DataTag GetSelectedTag()
+		{
+			//string tag = (string)CallJavaScript("GetLastSelected", null);
+			string tag = (string)webBrowser1.Document.InvokeScript("GetLastSelected", null);
+			if (tag == null)
+				return null;
+			var ss = tag.Split(':');
+			var log = this.log_files.Find(l => l.ID == ss[0]);
+			int lineno = int.Parse(ss[1]);
+			return new DataTag(log, lineno);
+		}
+
+		/// <summary>
+		/// Expand shortcut (*.lnk)
+		/// </summary>
+		/// <param name="filename">file or Windows shortcut</param>
+		/// <returns>full path of file</returns>
 		public static string GetTargetPath(string filename)
 		{
 			if (Path.GetExtension(filename) != ".lnk")
-				return filename;
+				return Path.GetFullPath(filename);
 
 			var shell = new IWshRuntimeLibrary.WshShell();
 			var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(filename);
 			return shortcut.TargetPath;
 		}
 
-
 		// log files and lines document class
 
+		/// <summary>
+		/// Log file information.
+		/// </summary>
 		class LogFile
 		{
-			public string Name { get; set; }
+			public string Name { get; set; }    /// <summary>path of log file</summary>
 			public string ID { get; private set; }
 			static int serial = 0;
 
 			public Color Color { get; set; }
+			public TimeSpan TimeDifference { get; set; }
 			public Encoding Encoding { get; set; }
 			public static Encoding DefaultEncoding { get; set; } = Encoding.UTF8;
 
@@ -519,9 +559,11 @@ namespace SpinningLog
 				this.Encoding = LogFile.DefaultEncoding;
 			}
 
-			// read unread lines
+			/// <summary>
+			/// read unread lines from log file
+			/// </summary>
+			/// <returns>collection of lines</returns>
 			public Queue<LogLine> ReadIncrLinesQ()
-			//public List<LogLine> GetIncrLines()
 			{
 				var lines = new Queue<LogLine>();
 				try {
@@ -538,13 +580,20 @@ namespace SpinningLog
 						this.LastPosition = stream.Position;
 					}
 				} catch (Exception ex) {
-					// FileNotFoundException
+					// if error, read at next timing
 					Console.WriteLine(ex.Message);
 				}
 				return lines;
 			}
 
+			/// <summary>
+			/// Last time in this file
+			/// </summary>
 			DateTime LastTime;
+
+			/// <summary>
+			/// 
+			/// </summary>
 			Regex TimeTemplate;
 
 			static Regex[] templates = {
@@ -554,24 +603,32 @@ namespace SpinningLog
 				new Regex(@"[0-9]+\-[0-9]+\-[0-9]+\s+[0-9]+\:[0-9]+\:[0-9]+(\.[0-9]+)?"),	// 2020-03-23 06:00:00.123
 			};
 
-			public DateTime GetTimeFrom(string text)
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <param name="line"></param>
+			/// <returns></returns>
+			public DateTime GetTimeFrom(string line)
 			{
 				if (TimeTemplate == null) {
 					foreach (var regex in templates) {
-						var match = regex.Match(text);
+						var match = regex.Match(line);
 						if (match.Success && DateTime.TryParse(match.Value, out LastTime)) {
 							TimeTemplate = regex;
 							break;
 						}
 					}
 				} else {
-					var match = TimeTemplate.Match(text);
+					var match = TimeTemplate.Match(line);
 					if (match.Success)
 						DateTime.TryParse(match.Value, out LastTime);
 				}
 				return this.LastTime;
 			}
 
+			/// <summary>
+			/// 
+			/// </summary>
 			public void Reset()
 			{
 				this.LastPosition = 0;
@@ -580,45 +637,44 @@ namespace SpinningLog
 			}
 		}
 
+		/// <summary>
+		/// A line of log
+		/// </summary>
 		class LogLine
 		{
 			public LogFile File { get; set; }
 			public int LineNo { get; set; }
 			public string Text { get; set; }
-			public DateTime Time { get { return raw_time + TimeDifference; } }
+			public DateTime Time { get { return raw_time + File.TimeDifference; } }
 			DateTime raw_time;
-			TimeSpan TimeDifference;
 
-			public LogLine(LogFile logfile, string text)
+			public LogLine(LogFile file, string text)
 			{
-				this.File = logfile;
+				this.File = file;
 				this.Text = text;
-				this.raw_time = logfile.GetTimeFrom(Text);
+				this.raw_time = file.GetTimeFrom(text);
 			}
 		}
 
+		/// <summary>
+		/// List of Log Files
+		/// </summary>
 		List<LogFile> log_files = new List<LogFile>();
+
+		/// <summary>
+		/// List of merged log lines
+		/// </summary>
 		List<LogLine> merged_lines = new List<LogLine>();
-		DateTime LastTime/* = DateTime.Now*/;
 
-		string TimeSpanString(TimeSpan timespan)
-		{
-			string s = timespan.ToString(@"h\:mm\:ss\.fff");
-			if (timespan.Days != 0)
-				return string.Format("{0} days and\n", timespan.Days) + s;
-			return s;
-		}
+		/// <summary>
+		/// Last time in all log files
+		/// </summary>
+		DateTime LastTime = DateTime.Now;
 
-		void Clear()
-		{
-			// close all files, clear screen
-			log_files.Clear();
-			merged_lines.Clear();
-			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
-		}
-
-		// reload all files
-		void Reload()
+		/// <summary>
+		/// Reload all log files.
+		/// </summary>
+		void ReloadAll()
 		{
 			merged_lines.Clear();
 			foreach (var log in log_files)
@@ -628,39 +684,27 @@ namespace SpinningLog
 			RefreshMerged();
 		}
 
-		List<string> LogFilters = new List<string>() { "*.log", "*.txt", /*"*.log.*" */ };
-
+		/// <summary>
+		/// List up files, include under directories
+		/// </summary>
+		/// <param name="files">colection filename and directory</param>
 		void AddLogFiles(IEnumerable<string> files)
 		{
 			foreach (string path in files) {
 				string link_to = GetTargetPath(path);
-				if (Directory.Exists(path) || Directory.Exists(link_to)) {
-					foreach (string filter in LogFilters)
+				if (Directory.Exists(link_to)) {
+					foreach (string filter in sett.log_filters)
 						AddLogFiles(Directory.GetFiles(link_to, filter, SearchOption.AllDirectories));
 				} else {
-					if (log_files.Any(l => l.Name == path))
-						continue;   // ignore already exists
-					log_files.Add(new LogFile(path));
-					Console.WriteLine("add file: {0}", path);
+					if (!log_files.Any(l => l.Name == path))
+						log_files.Add(new LogFile(path));
 				}
 			}
 		}
 
-		//List<string> HighlightWords = new List<string>(){
-		//	"error",
-		//	"failed", "fail",
-		//	"cannot", "can not", "can't",
-		//};
-		static string HighlightWords = "error|failed|fail|cannot|can not|can't";
-
-		string HightlightHtml(string text, string words)
-		{
-			//return Regex.Replace(text, "(" + string.Join("|", words) + ")",
-			//  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
-			return Regex.Replace(text, words,
-			  "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
-		}
-
+		/// <summary>
+		/// Load and merge lines of listed log files
+		/// </summary>
 		void RefreshMerged()
 		{
 			DropPanel.SendToBack();
@@ -703,20 +747,20 @@ namespace SpinningLog
 				if (i > 0) {
 					var timespan = line.Time - LastTime;
 					if (timespan.TotalMilliseconds > sett.blank_msec)
-						html.AppendLine("<span class='blank'>" + TimeSpanString(timespan) + "</span>");
+						html.AppendLine("<span class='blank'>" + Format(timespan) + "</span>");
 					else if (timespan.TotalMilliseconds < -sett.blank_msec)
-						html.AppendLine("<span class='blank back'>" + TimeSpanString(timespan) + "</span>");
+						html.AppendLine("<span class='blank back'>" + Format(timespan) + "</span>");
 				}
 				LastTime = line.Time;
 
 				string text = line.Text;
 				text = text.Replace('\0', ' ').TrimEnd();
 				text = HttpUtility.HtmlEncode(text);
+				text = Regex.Replace(text, sett.highlights, "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
 
-				text = HightlightHtml(text, HighlightWords);
-
+				var tag = new DataTag(line);
 				html.Append("<label style=color:" + line.File.Color.Name
-				 + " data-tag=" + line.File.ID + ":" + line.LineNo + ">"
+				 + " data-tag=" + tag.ToString() + ">"
 				 + Path.GetFileName(line.File.Name) + "</label> "
 				 + text + "\n");
 
@@ -729,7 +773,7 @@ namespace SpinningLog
 			if (n > 0) {
 				Cursor.Current = Cursors.WaitCursor;
 
-				var div = webBrowser1.Document.GetElementById("merged");
+				HtmlElement div = webBrowser1.Document.GetElementById("merged");
 				// 多分ここが遅い
 				//pre.InnerHtml += html.ToString();
 				var pre = webBrowser1.Document.CreateElement("pre");
@@ -756,6 +800,7 @@ namespace SpinningLog
 		private void LiveTimer_Tick(object sender, EventArgs e)
 		{
 			try {
+				// check any file modified
 				if (LiveMenu.Checked)
 					RefreshMerged();
 

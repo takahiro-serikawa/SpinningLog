@@ -30,10 +30,14 @@ label {
 	width: 130px;
 	text-align: right; /**/
 	cursor: pointer;
-	transition: background 0.3s;
+	transition: background 0.2s;
 }
+
 label:hover {
 	background: #222;
+}
+
+label.selected {
 }
 
 .highlight { color: fuchsia; }
@@ -48,9 +52,7 @@ label:hover {
 }
 
 .blank:after { content: ' passed'; }/**/
-.blank.back {
-	background: #212;
-}
+.blank.back { background: #212; }
 /*.blank.back:after { content: ' goes-back'; }*/
 #latest.blank { background: #008; }
 
@@ -58,6 +60,7 @@ label:hover {
 .flash-effect:nth-of-type(n+2) {
 	animation: flash 1.7s ease 0;
 }
+
 @keyframes flash {
    0% { background-color: #008; }
  100% { background-color: #000; }
@@ -66,26 +69,46 @@ label:hover {
 #live {
 	position: fixed;
 	bottom: 1px;
-	/*right: 17px;*/
 	left: 67px;
 	padding: 0px 11px;
+	background-color: black;
+	border: 1px solid gray;
+	border-radius: 3px;
+	color: gray;
+}
+
+#live.active {
+	animation: blink 1.0s infinite;
+	border: 1px solid red;
+}
+
+@keyframes blink {
+   0% { color: #f00; }
+ 100% { color: #800; }
+}
+
+#debug {
+	position: fixed;
+	top: 10px;
+	right: 10px;
+	width: 300px;
+	height: 100px;
 }
 </style>
 </head>
 
 <body>
-	<div id=merged>
-
-<!-- log lines are inserted here as following pre -->
+	<div id=merged><!-- log lines are inserted here as following pre -->
 <pre><label style=color:red data-tag=1:23>sample.log</label> 2020-4-12 22:15:11.123 sample line
-<label style=color:orange data-tag=4:45>SMPL.LOG</label> 2020-4-12 22:17:53.567 === LOG ===
+<label class=selected style=color:orange data-tag=4:45>SMPL.LOG</label> 2020-4-12 22:17:53.567 === LOG ===
 <span class=blank>00:05:12 passed</span>
 <label></label> ...</pre>
-
 	</div>
-	<pre><span id=latest class=blank> 0:00:00.999</span></pre>
-	<!--button id=live>LIVE</!--button-->
-	<div id=live>LIVE</div>
+	<pre id=latest class=blank> 0:00:00.999</pre>
+	<div id=live class=active>LIVE</div>
+	<div id=debug style=display:none>DEBUG<br>
+		cnt: <span id=resize_cnt>?</span><br>
+	</div>
 
 <script>
 'use strict';
@@ -101,8 +124,27 @@ function GetLastSelected() { return tag }
 
 document.onmouseup = function (ev) {
 	tag = ev.target.dataset.tag;
+	ev.target.setAttribute('className', 'selected');
 	if (tag) window.external.ComCommand('select', tag)
 }
+
+document.getElementById('live').onclick = function (ev) {
+	window.external.ComCommand('live-toggle', null)
+}
+
+var resize_cnt = 0;
+var cnt_span = document.getElementById('resize_cnt');
+cnt_span.innerHTML = '-';
+
+document.getElementById('merged').onresize = function (ev) {
+	//cnt_span.innerHTML = ++resize_cnt
+}
+document.body.onresize = function (ev) {
+	cnt_span.innerHTML = ++resize_cnt
+}
+//document.window.onresize = function (ev) {
+//	cnt_span.innerHTML = ++resize_cnt
+//}
 
 </script>
 </body>
