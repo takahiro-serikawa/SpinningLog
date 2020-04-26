@@ -180,6 +180,7 @@ namespace SpinningLog
 			public string[] log_filters;    // wildcard recognized as log files
 			public string highlights;       // highlight keywords as Regex
 			public bool live;               // live refresh mode
+			public string line_filter;		// 
 
 			public string html_file = "";
 		}
@@ -254,7 +255,10 @@ namespace SpinningLog
 					this.WindowState = sett.FormWindowState;
 			}
 
+			HighlightsText.Text = sett.highlights;
 			//LiveMenu.Checked = sett.live; -> after DocumentCompleted()
+
+
 		}
 
 		/// <summary>
@@ -367,6 +371,16 @@ namespace SpinningLog
 				live.SetAttribute("className", "");
 		}
 
+		private void HighlightsMenu_Click(object sender, EventArgs e)
+		{
+			//HighlightsPanel.Visible = !HighlightsPanel.Visible;
+		}
+
+		private void FilteringMenu_Click(object sender, EventArgs e)
+		{
+			//FilteringPanel.Visible = !FilteringPanel.Visible;
+		}
+
 		// open another text editor
 		private void TagJumpMenu_Click(object sender, EventArgs e)
 		{
@@ -449,7 +463,6 @@ namespace SpinningLog
 					break;
 				case "end":
 				case "live-toggle":
-					//main.LiveMenu_Click(null, null); 
 					main.LiveMenu.Checked = !main.LiveMenu.Checked;
 					break;
 				case "select":
@@ -740,6 +753,7 @@ namespace SpinningLog
 			}
 
 			var html = new StringBuilder(1000*1000);
+			Regex filter = (sett.line_filter != null) ? new Regex(sett.line_filter) : null;
 			for (int i = start_index; i < merged_lines.Count; i++) {
 				var line = merged_lines[i];
 
@@ -757,6 +771,12 @@ namespace SpinningLog
 				text = text.Replace('\0', ' ').TrimEnd();
 				text = HttpUtility.HtmlEncode(text);
 				text = Regex.Replace(text, sett.highlights, "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
+				if (filter != null) {
+					var match = filter.Match(text);
+					if (!match.Success)
+						continue;
+					text = Regex.Replace(text, sett.line_filter, "<span class=filter>$0</span>", RegexOptions.IgnoreCase);
+				}
 
 				var tag = new DataTag(line);
 				html.Append("<label style=color:" + line.File.Color.Name
@@ -809,5 +829,17 @@ namespace SpinningLog
 			}
 		}
 
+
+		private void ApplyButton_Click(object sender, EventArgs e)
+		{
+			sett.highlights = HighlightsText.Text;
+			ReloadAll();
+		}
+
+		private void HighlightsText_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			if (e.KeyChar == '\r')
+				ApplyButton_Click(null, null);
+		}
 	}
 }

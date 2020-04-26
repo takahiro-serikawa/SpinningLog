@@ -28,7 +28,6 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this.webBrowser1 = new System.Windows.Forms.WebBrowser();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.AppNewMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -51,7 +50,6 @@
 			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
 			this.TagJumpMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.ShowInExplorerMenu = new System.Windows.Forms.ToolStripMenuItem();
-			this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.HelpAboutMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
@@ -60,18 +58,14 @@
 			this.LiveTimer = new System.Windows.Forms.Timer(this.components);
 			this.DropPanel = new System.Windows.Forms.Panel();
 			this.fontDialog1 = new System.Windows.Forms.FontDialog();
+			this.HighlightsMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.FilteringMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.webBrowser1 = new System.Windows.Forms.WebBrowser();
+			this.HighlightsText = new System.Windows.Forms.TextBox();
+			this.label1 = new System.Windows.Forms.Label();
+			this.ApplyButton = new System.Windows.Forms.Button();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
-			// 
-			// webBrowser1
-			// 
-			this.webBrowser1.AllowNavigation = false;
-			this.webBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.webBrowser1.Location = new System.Drawing.Point(0, 24);
-			this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
-			this.webBrowser1.Name = "webBrowser1";
-			this.webBrowser1.Size = new System.Drawing.Size(800, 400);
-			this.webBrowser1.TabIndex = 0;
 			// 
 			// menuStrip1
 			// 
@@ -202,12 +196,13 @@
 			this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ViewHomeMenu,
             this.LiveMenu,
+            this.HighlightsMenu,
+            this.FilteringMenu,
             this.ViewReloadMenu,
             this.ViewClearMenu,
             this.toolStripMenuItem2,
             this.TagJumpMenu,
-            this.ShowInExplorerMenu,
-            this.fontToolStripMenuItem});
+            this.ShowInExplorerMenu});
 			this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
 			this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
 			this.viewToolStripMenuItem.Text = "&View";
@@ -274,11 +269,6 @@
 			this.ShowInExplorerMenu.Text = "&Explorer ...";
 			this.ShowInExplorerMenu.Click += new System.EventHandler(this.ShowInExplorerMenu_Click);
 			// 
-			// fontToolStripMenuItem
-			// 
-			this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-			this.fontToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			// 
 			// helpToolStripMenuItem
 			// 
 			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -327,22 +317,79 @@
 			this.DropPanel.AllowDrop = true;
 			this.DropPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.DropPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.DropPanel.Location = new System.Drawing.Point(0, 0);
+			this.DropPanel.Location = new System.Drawing.Point(0, 24);
 			this.DropPanel.Name = "DropPanel";
-			this.DropPanel.Size = new System.Drawing.Size(800, 424);
+			this.DropPanel.Size = new System.Drawing.Size(800, 400);
 			this.DropPanel.TabIndex = 3;
 			this.DropPanel.DragDrop += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragDrop);
 			this.DropPanel.DragOver += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragOver);
 			this.DropPanel.DragLeave += new System.EventHandler(this.DropPanel_DragLeave);
+			// 
+			// HighlightsMenu
+			// 
+			this.HighlightsMenu.Name = "HighlightsMenu";
+			this.HighlightsMenu.Size = new System.Drawing.Size(180, 22);
+			this.HighlightsMenu.Text = "Highlights";
+			this.HighlightsMenu.Click += new System.EventHandler(this.HighlightsMenu_Click);
+			// 
+			// FilteringMenu
+			// 
+			this.FilteringMenu.Name = "FilteringMenu";
+			this.FilteringMenu.Size = new System.Drawing.Size(180, 22);
+			this.FilteringMenu.Text = "Filtering";
+			this.FilteringMenu.Click += new System.EventHandler(this.FilteringMenu_Click);
+			// 
+			// webBrowser1
+			// 
+			this.webBrowser1.AllowNavigation = false;
+			this.webBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.webBrowser1.Location = new System.Drawing.Point(0, 24);
+			this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
+			this.webBrowser1.Name = "webBrowser1";
+			this.webBrowser1.Size = new System.Drawing.Size(800, 400);
+			this.webBrowser1.TabIndex = 0;
+			// 
+			// HighlightsText
+			// 
+			this.HighlightsText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.HighlightsText.Location = new System.Drawing.Point(333, 0);
+			this.HighlightsText.Name = "HighlightsText";
+			this.HighlightsText.Size = new System.Drawing.Size(400, 23);
+			this.HighlightsText.TabIndex = 4;
+			this.HighlightsText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.HighlightsText_KeyPress);
+			// 
+			// label1
+			// 
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(267, 4);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(60, 15);
+			this.label1.TabIndex = 5;
+			this.label1.Text = "highlights";
+			// 
+			// ApplyButton
+			// 
+			this.ApplyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.ApplyButton.Location = new System.Drawing.Point(739, 0);
+			this.ApplyButton.Name = "ApplyButton";
+			this.ApplyButton.Size = new System.Drawing.Size(58, 23);
+			this.ApplyButton.TabIndex = 6;
+			this.ApplyButton.Text = "apply";
+			this.ApplyButton.UseVisualStyleBackColor = true;
+			this.ApplyButton.Click += new System.EventHandler(this.ApplyButton_Click);
 			// 
 			// SpinningMain
 			// 
 			this.AllowDrop = true;
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.ClientSize = new System.Drawing.Size(800, 424);
+			this.Controls.Add(this.ApplyButton);
+			this.Controls.Add(this.label1);
+			this.Controls.Add(this.HighlightsText);
 			this.Controls.Add(this.webBrowser1);
-			this.Controls.Add(this.menuStrip1);
 			this.Controls.Add(this.DropPanel);
+			this.Controls.Add(this.menuStrip1);
 			this.Font = new System.Drawing.Font("Yu Gothic UI", 9F);
 			this.MainMenuStrip = this.menuStrip1;
 			this.MinimumSize = new System.Drawing.Size(500, 120);
@@ -360,8 +407,6 @@
 		}
 
 		#endregion
-
-		private System.Windows.Forms.WebBrowser webBrowser1;
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem AppNewMenu;
@@ -391,8 +436,13 @@
 		private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem ExportHtmlMenu;
-		private System.Windows.Forms.ToolStripMenuItem fontToolStripMenuItem;
 		private System.Windows.Forms.FontDialog fontDialog1;
+		private System.Windows.Forms.ToolStripMenuItem HighlightsMenu;
+		private System.Windows.Forms.ToolStripMenuItem FilteringMenu;
+		private System.Windows.Forms.WebBrowser webBrowser1;
+		private System.Windows.Forms.TextBox HighlightsText;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Button ApplyButton;
 	}
 }
 
