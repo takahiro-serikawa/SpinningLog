@@ -5,12 +5,16 @@
 
 <style>
 body {
-	margin: 0;
+	/*margin: 0;*/
 	color: white;
 	background: black;
 	height: 100vh;	/* for _DragOver event */
 	font-family: monospace;
 	font-size: 11pt;
+}
+
+body.debug {
+	border: 1px solid red;
 }
 
 #merged {
@@ -24,9 +28,13 @@ pre {
 	font-size: 11pt;
 }
 
+*.debug pre {
+	border: 1px solid yellow;
+}
+
 /* filename column */
 label {
-	display: inline-block;
+	/*display: inline-block;
 	width: 130px;
 	text-align: right; /**/
 	cursor: pointer;
@@ -49,7 +57,8 @@ label.selected {
 	color: #ffc;
 	background: #122;
 	font-size: 85%;
-	padding-left: 140px;
+	text-align: center;
+	/*padding-left: 140px;*/
 }
 
 .blank:after { content: ' passed'; }/**/
@@ -94,7 +103,13 @@ label.selected {
 	right: 10px;
 	width: 300px;
 	height: 100px;
+	display: none;
 }
+
+*.debug #debug {
+	display: block;
+}
+
 </style>
 </head>
 
@@ -107,8 +122,8 @@ label.selected {
 	</div>
 	<pre id=latest class=blank> 0:00:00.999</pre>
 	<div id=live class=active>LIVE</div>
-	<div id=debug style=display:none>DEBUG<br>
-		cnt: <span id=resize_cnt>?</span><br>
+	<div id=debug>DEBUG<br>
+		<!--cnt: <span id=resize_cnt>?</span><br>-->
 	</div>
 
 <script>
@@ -132,20 +147,6 @@ document.onmouseup = function (ev) {
 document.getElementById('live').onclick = function (ev) {
 	window.external.ComCommand('live-toggle', null)
 }
-
-var resize_cnt = 0;
-var cnt_span = document.getElementById('resize_cnt');
-cnt_span.innerHTML = '-';
-
-document.getElementById('merged').onresize = function (ev) {
-	//cnt_span.innerHTML = ++resize_cnt
-}
-document.body.onresize = function (ev) {
-	cnt_span.innerHTML = ++resize_cnt
-}
-//document.window.onresize = function (ev) {
-//	cnt_span.innerHTML = ++resize_cnt
-//}
 
 </script>
 </body>

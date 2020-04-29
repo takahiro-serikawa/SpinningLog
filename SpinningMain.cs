@@ -50,19 +50,15 @@ namespace SpinningLog
 					DropPanel.BringToFront();
 				};
 
+#if DEBUG
+				//webBrowser1.Document.Body.SetAttribute("className", "debug");
+#endif
+
 				LiveMenu.Checked = sett.live;
 
 				webBrowser1.Document.GetElementById("merged").InnerHtml = "";
-				//webBrowser1.Visible = false;
 				DropPanel.BringToFront();
 				RefreshMerged();
-				//webBrowser1.Visible = true;
-
-#if DEBUG
-				HtmlElement debug = webBrowser1.Document.GetElementById("debug");
-				if (debug != null)
-					debug.Style = "display:block";
-#endif
 			};
 
 			// load "empty.html" from resource
@@ -140,7 +136,7 @@ namespace SpinningLog
 		{
 			string s = timespan.ToString(@"h\:mm\:ss\.fff");
 			if (timespan.Days != 0)
-				return string.Format("{0} days and\n", timespan.Days) + s;
+				return string.Format("{0} days, ", timespan.Days) + s;
 			return s;
 		}
 
@@ -151,6 +147,7 @@ namespace SpinningLog
 				var timespan = DateTime.Now - this.LastTime;
 				HtmlElement latest = webBrowser1.Document.GetElementById("latest");
 				latest.InnerHtml = Format(timespan);
+
 			} catch (Exception ex) {
 				Debug.WriteLine("timer1_Tick: {0}", ex.Message);
 			}
@@ -180,7 +177,7 @@ namespace SpinningLog
 			public string[] log_filters;    // wildcard recognized as log files
 			public string highlights;       // highlight keywords as Regex
 			public bool live;               // live refresh mode
-			public string line_filter;		// 
+			public string line_filter;      // 
 
 			public string html_file = "";
 		}
@@ -257,8 +254,6 @@ namespace SpinningLog
 
 			HighlightsText.Text = sett.highlights;
 			//LiveMenu.Checked = sett.live; -> after DocumentCompleted()
-
-
 		}
 
 		/// <summary>
@@ -358,8 +353,10 @@ namespace SpinningLog
 		// scroll to bottom, and toggle live refresh
 		public void LiveMenu_Click(object sender, EventArgs e)
 		{
-			HtmlElement div = webBrowser1.Document.GetElementById("merged");
-			webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
+			//HtmlElement div = webBrowser1.Document.GetElementById("merged");
+			//webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
+			HtmlElement latest = webBrowser1.Document.GetElementById("latest");
+			webBrowser1.Document.Window.ScrollTo(0, latest.ScrollRectangle.Bottom);
 		}
 
 		private void LiveMenu_CheckedChanged(object sender, EventArgs e)
@@ -724,6 +721,7 @@ namespace SpinningLog
 			int tc0 = Environment.TickCount;
 			var sw = Stopwatch.StartNew();
 
+			// read lines
 			var queues = new List<Queue<LogLine>>();
 			foreach (var log in log_files) {
 				Queue<LogLine> queue = log.ReadIncrLinesQ();
@@ -734,24 +732,62 @@ namespace SpinningLog
 			long dbg_read_msec = sw.ElapsedMilliseconds;
 			sw.Restart();
 
-			int start_index = merged_lines.Count;
-			int n = 0;
-			while (queues.Count > 0) {
-				if (Environment.TickCount - tc0 > 100)
-					Cursor.Current = Cursors.WaitCursor;
+			if (queues.Count > 0) {
+				Cursor.Current = Cursors.WaitCursor;
 
-				var top = queues[0];
-				foreach (var q in queues)
-					if (top.Peek().Time > q.Peek().Time)
-						top = q;
+				// merge
+				int start_index = merged_lines.Count;
+				while (queues.Count > 0) {
+					var top = queues[0];
+					foreach (var q in queues)
+						if (top.Peek().Time > q.Peek().Time)
+							top = q;
 
-				LogLine line = top.Dequeue();
-				if (top.Count <= 0)
-					queues.Remove(top);
+					LogLine line = top.Dequeue();
+					if (top.Count <= 0)
+						queues.Remove(top);
 
-				merged_lines.Add(line);
+					merged_lines.Add(line);
+				}
+
+				long dbg_merge1_msec = sw.ElapsedMilliseconds;
+				sw.Restart();
+
+				string html = GenerateHtml(start_index);
+
+				// set html, scroll
+				long dbg_merge2_msec = sw.ElapsedMilliseconds;
+				sw.Restart();
+
+				if (html.Length > 0/*n > 0*/) {
+					HtmlElement div = webBrowser1.Document.GetElementById("merged");
+					var pre = webBrowser1.Document.CreateElement("pre");
+					pre.InnerHtml = html;//.ToString();
+					pre.SetAttribute("className", "flash-effect");
+					div.InsertAdjacentElement(HtmlElementInsertionOrientation.BeforeEnd, pre);
+
+					long dbg_html_msec = sw.ElapsedMilliseconds;
+					sw.Restart();
+
+					// scroll to newest line
+					webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height + 100);
+					Console.WriteLine(div.ScrollRectangle);
+					long dbg_scroll_msec = sw.ElapsedMilliseconds;
+
+					int n = merged_lines.Count - start_index;
+					Console.WriteLine("RefreshMerged: {0} lines / read {1}, merge1 {2}, merge2 {3}, html {4} msec, scroll {5}",
+					 n, dbg_read_msec, dbg_merge1_msec, dbg_merge2_msec, dbg_html_msec, dbg_scroll_msec);
+				}
+
+				Cursor.Current = Cursors.Default;
+				DropPanel.SendToBack();
 			}
+		}
 
+		bool highlight_enabled = true;
+
+		string GenerateHtml(int start_index)
+		{
 			var html = new StringBuilder(1000*1000);
 			Regex filter = (sett.line_filter != null) ? new Regex(sett.line_filter) : null;
 			for (int i = start_index; i < merged_lines.Count; i++) {
@@ -770,7 +806,8 @@ namespace SpinningLog
 				string text = line.Text;
 				text = text.Replace('\0', ' ').TrimEnd();
 				text = HttpUtility.HtmlEncode(text);
-				text = Regex.Replace(text, sett.highlights, "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
+				if (highlight_enabled)
+					text = Regex.Replace(text, sett.highlights, "<span class=highlight>$0</span>", RegexOptions.IgnoreCase);
 				if (filter != null) {
 					var match = filter.Match(text);
 					if (!match.Success)
@@ -783,38 +820,8 @@ namespace SpinningLog
 				 + " data-tag=" + tag.ToString() + ">"
 				 + Path.GetFileName(line.File.Name) + "</label> "
 				 + text + "\n");
-
-				n++;
 			}
-
-			long dbg_merge_msec = sw.ElapsedMilliseconds;
-			sw.Restart();
-
-			if (n > 0) {
-				Cursor.Current = Cursors.WaitCursor;
-
-				HtmlElement div = webBrowser1.Document.GetElementById("merged");
-				// 多分ここが遅い
-				//pre.InnerHtml += html.ToString();
-				var pre = webBrowser1.Document.CreateElement("pre");
-				pre.InnerHtml = html.ToString();
-				pre.SetAttribute("className", "flash-effect");
-				div.InsertAdjacentElement(HtmlElementInsertionOrientation.BeforeEnd, pre);
-
-				long dbg_html_msec = sw.ElapsedMilliseconds;
-				sw.Restart();
-
-				// scroll to newest line
-				webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
-
-				long dbg_scroll_msec = sw.ElapsedMilliseconds;
-
-				Console.WriteLine("RefreshMerged: {0} lines / read {1}, merge {2}, html {3} msec, scroll {4}",
-				 n, dbg_read_msec, dbg_merge_msec, dbg_html_msec, dbg_scroll_msec);
-			}
-
-			Cursor.Current = Cursors.Default;
-			DropPanel.SendToBack();
+			return html.ToString();
 		}
 
 		private void LiveTimer_Tick(object sender, EventArgs e)

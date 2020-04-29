@@ -45,6 +45,8 @@
 			this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.ViewHomeMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.LiveMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.HighlightsMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.FilteringMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.ViewReloadMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.ViewClearMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
@@ -58,8 +60,6 @@
 			this.LiveTimer = new System.Windows.Forms.Timer(this.components);
 			this.DropPanel = new System.Windows.Forms.Panel();
 			this.fontDialog1 = new System.Windows.Forms.FontDialog();
-			this.HighlightsMenu = new System.Windows.Forms.ToolStripMenuItem();
-			this.FilteringMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.webBrowser1 = new System.Windows.Forms.WebBrowser();
 			this.HighlightsText = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
@@ -230,6 +230,22 @@
 			this.LiveMenu.CheckedChanged += new System.EventHandler(this.LiveMenu_CheckedChanged);
 			this.LiveMenu.Click += new System.EventHandler(this.LiveMenu_Click);
 			// 
+			// HighlightsMenu
+			// 
+			this.HighlightsMenu.Name = "HighlightsMenu";
+			this.HighlightsMenu.Size = new System.Drawing.Size(180, 22);
+			this.HighlightsMenu.Text = "Highlights";
+			this.HighlightsMenu.Visible = false;
+			this.HighlightsMenu.Click += new System.EventHandler(this.HighlightsMenu_Click);
+			// 
+			// FilteringMenu
+			// 
+			this.FilteringMenu.Name = "FilteringMenu";
+			this.FilteringMenu.Size = new System.Drawing.Size(180, 22);
+			this.FilteringMenu.Text = "Filtering";
+			this.FilteringMenu.Visible = false;
+			this.FilteringMenu.Click += new System.EventHandler(this.FilteringMenu_Click);
+			// 
 			// ViewReloadMenu
 			// 
 			this.ViewReloadMenu.Name = "ViewReloadMenu";
@@ -280,7 +296,7 @@
 			// HelpAboutMenu
 			// 
 			this.HelpAboutMenu.Name = "HelpAboutMenu";
-			this.HelpAboutMenu.Size = new System.Drawing.Size(180, 22);
+			this.HelpAboutMenu.Size = new System.Drawing.Size(177, 22);
 			this.HelpAboutMenu.Text = "&About SpinningLog";
 			this.HelpAboutMenu.ToolTipText = "バージョン情報を表示";
 			this.HelpAboutMenu.Click += new System.EventHandler(this.HelpAboutMenu_Click);
@@ -325,20 +341,6 @@
 			this.DropPanel.DragOver += new System.Windows.Forms.DragEventHandler(this.SpinningMain_DragOver);
 			this.DropPanel.DragLeave += new System.EventHandler(this.DropPanel_DragLeave);
 			// 
-			// HighlightsMenu
-			// 
-			this.HighlightsMenu.Name = "HighlightsMenu";
-			this.HighlightsMenu.Size = new System.Drawing.Size(180, 22);
-			this.HighlightsMenu.Text = "Highlights";
-			this.HighlightsMenu.Click += new System.EventHandler(this.HighlightsMenu_Click);
-			// 
-			// FilteringMenu
-			// 
-			this.FilteringMenu.Name = "FilteringMenu";
-			this.FilteringMenu.Size = new System.Drawing.Size(180, 22);
-			this.FilteringMenu.Text = "Filtering";
-			this.FilteringMenu.Click += new System.EventHandler(this.FilteringMenu_Click);
-			// 
 			// webBrowser1
 			// 
 			this.webBrowser1.AllowNavigation = false;
@@ -357,6 +359,7 @@
 			this.HighlightsText.Name = "HighlightsText";
 			this.HighlightsText.Size = new System.Drawing.Size(400, 23);
 			this.HighlightsText.TabIndex = 4;
+			this.HighlightsText.Visible = false;
 			this.HighlightsText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.HighlightsText_KeyPress);
 			// 
 			// label1
@@ -367,6 +370,7 @@
 			this.label1.Size = new System.Drawing.Size(60, 15);
 			this.label1.TabIndex = 5;
 			this.label1.Text = "highlights";
+			this.label1.Visible = false;
 			// 
 			// ApplyButton
 			// 
@@ -377,6 +381,7 @@
 			this.ApplyButton.TabIndex = 6;
 			this.ApplyButton.Text = "apply";
 			this.ApplyButton.UseVisualStyleBackColor = true;
+			this.ApplyButton.Visible = false;
 			this.ApplyButton.Click += new System.EventHandler(this.ApplyButton_Click);
 			// 
 			// SpinningMain

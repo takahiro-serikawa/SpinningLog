@@ -73,30 +73,6 @@ namespace SpinningLog.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("*.txt|*.log")]
-        public string log_filters {
-            get {
-                return ((string)(this["log_filters"]));
-            }
-            set {
-                this["log_filters"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("error|failed|fail|cannot|can not|can\'t")]
-        public string highlights {
-            get {
-                return ((string)(this["highlights"]));
-            }
-            set {
-                this["highlights"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string last_sett {
             get {
