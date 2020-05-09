@@ -2,7 +2,7 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SpinningLog.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="last_open_files" Type="System.String" Scope="User">
+    <Setting Name="last_open_filesX" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="valid" Type="System.Boolean" Scope="User">

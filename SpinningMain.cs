@@ -21,8 +21,14 @@ using System.Xml.Serialization;
 
 namespace SpinningLog
 {
+	/// <summary>
+	/// 
+	/// </summary>
 	public partial class SpinningMain: Form
 	{
+		/// <summary>
+		/// 
+		/// </summary>
 		public SpinningMain()
 		{
 			InitializeComponent();
@@ -68,7 +74,7 @@ namespace SpinningLog
 			}
 
 			ParseCommandLine(Environment.GetCommandLineArgs());
-			RestoreSettings();
+			//RestoreSettings();
 		}
 
 		/// <summary>
@@ -101,15 +107,13 @@ namespace SpinningLog
 				} else
 					files.Add(args[i]);
 
+			RestoreAppSettings();
 			if (opt_new)
 				;
 			else if (files.Count > 0)
 				AddLogFiles(files);
-			else if (Properties.Settings.Default.last_open_files != "") {
-				string openfiles = Properties.Settings.Default.last_open_files;
-				AddLogFiles(openfiles.Split('|'));
-			}
-			//RefreshMerged(); -> after DocumentComplete()
+			else
+				RestoreSettings();
 		}
 
 		private void SpinningMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -128,32 +132,6 @@ namespace SpinningLog
 		}
 
 		/// <summary>
-		/// Convert timespan to string by application setting
-		/// </summary>
-		/// <param name="timespan">Time span to convert</param>
-		/// <returns>Converted string</returns>
-		string Format(TimeSpan timespan)
-		{
-			string s = timespan.ToString(@"h\:mm\:ss\.fff");
-			if (timespan.Days != 0)
-				return string.Format("{0} days, ", timespan.Days) + s;
-			return s;
-		}
-
-		private void timer1_Tick(object sender, EventArgs e)
-		{
-			try {
-				// refresh last time
-				var timespan = DateTime.Now - this.LastTime;
-				HtmlElement latest = webBrowser1.Document.GetElementById("latest");
-				latest.InnerHtml = Format(timespan);
-
-			} catch (Exception ex) {
-				Debug.WriteLine("timer1_Tick: {0}", ex.Message);
-			}
-		}
-
-		/// <summary>
 		/// SpinningLog aplication settings
 		/// </summary>
 		public class SpinningSett
@@ -166,6 +144,9 @@ namespace SpinningLog
 				blank_msec = 3000;
 				highlights = "error|failed|fail|cannot|can not|can't";
 				log_filters = new string[] { "*.log", "*.txt" };
+
+				live = true;
+				polling_msec = 1000;
 			}
 
 			[DefaultValueAttribute(FormWindowState.Normal)]
@@ -178,8 +159,10 @@ namespace SpinningLog
 			public string highlights;       // highlight keywords as Regex
 			public bool live;               // live refresh mode
 			public string line_filter;      // 
-
+			public int polling_msec;
 			public string html_file = "";
+
+			public LogFile[] log_files;
 		}
 
 		SpinningSett sett = new SpinningSett();
@@ -200,11 +183,11 @@ namespace SpinningLog
 			/// <param name="macros">Expanded macro, set of name-value pairs</param>
 			public void Execute(Dictionary<string, object> macros)
 			{
-				Cursor.Current = Cursors.WaitCursor;
 				string options = this.goto_option;
-				foreach (string key in macros.Keys) {
+				foreach (string key in macros.Keys)
 					options = options.Replace(key, macros[key].ToString());
-				}
+
+				Cursor.Current = Cursors.WaitCursor;
 				Process.Start(this.exe, options);
 			}
 		}
@@ -214,7 +197,7 @@ namespace SpinningLog
 		/// <summary>
 		/// Restore application settings.
 		/// </summary>
-		void RestoreSettings()
+		void RestoreAppSettings()
 		{
 			if (!Properties.Settings.Default.valid)
 				Properties.Settings.Default.Upgrade();
@@ -227,9 +210,16 @@ namespace SpinningLog
 			if (!File.Exists(sett_filename))
 				sett_filename = Path.GetDirectoryName(Application.LocalUserAppDataPath) + SLOG_EXT;
 			Debug.WriteLine("sett_filename=" + sett_filename);
+		}
 
+		/// <summary>
+		/// Restore application settings.
+		/// </summary>
+		void RestoreSettings()
+		{
 			try {
-				var serializer = new XmlSerializer(typeof(SpinningSett));
+				Type[] et = new Type[] { typeof(LogFile), typeof(List<LogFile>) };
+				var serializer = new XmlSerializer(typeof(SpinningSett), et);
 				using (var sr = new StreamReader(sett_filename, Encoding.UTF8)) {
 					sett = (SpinningSett)serializer.Deserialize(sr);
 				}
@@ -253,7 +243,11 @@ namespace SpinningLog
 			}
 
 			HighlightsText.Text = sett.highlights;
+			LiveTimer.Interval = sett.polling_msec;
 			//LiveMenu.Checked = sett.live; -> after DocumentCompleted()
+
+			if (sett.log_files.Length > 0)
+				log_files.AddRange(sett.log_files);
 		}
 
 		/// <summary>
@@ -261,8 +255,6 @@ namespace SpinningLog
 		/// </summary>
 		void SaveSettings()
 		{
-			Properties.Settings.Default.last_open_files = string.Join("|", log_files.Select(l => l.Name));
-
 			Properties.Settings.Default.editor_exe = editor.exe;
 			Properties.Settings.Default.editor_goto_option = editor.goto_option;
 
@@ -278,9 +270,39 @@ namespace SpinningLog
 			sett.def_encoding = LogFile.DefaultEncoding.WebName;
 			sett.live = LiveMenu.Checked;
 
-			var serializer = new XmlSerializer(typeof(SpinningSett));
+			sett.log_files = log_files.ToArray();
+			Type[] et = new Type[] { typeof(LogFile), typeof(List<LogFile>) };
+			var serializer = new XmlSerializer(typeof(SpinningSett), et);
 			using (var sw = new StreamWriter(sett_filename, false, Encoding.UTF8)) {
 				serializer.Serialize(sw, sett);
+			}
+		}
+
+		/// <summary>
+		/// Convert timespan to string by application setting
+		/// </summary>
+		/// <param name="timespan">Time span to convert</param>
+		/// <returns>Converted string</returns>
+		string Format(TimeSpan timespan)
+		{
+			string s = timespan.ToString(@"h\:mm\:ss\.fff");
+			if (timespan.Days > 1)
+				return string.Format("{0} days and ", timespan.Days) + s;
+			if (timespan.Days == 1)
+				return "1 day and " + s;
+			return s;
+		}
+
+		private void timer1_Tick(object sender, EventArgs e)
+		{
+			try {
+				// refresh last time
+				var timespan = DateTime.Now - this.LastTime;
+				HtmlElement latest = webBrowser1.Document.GetElementById("latest");
+				latest.InnerHtml = Format(timespan);
+
+			} catch (Exception ex) {
+				Debug.WriteLine("timer1_Tick: {0}", ex.Message);
 			}
 		}
 
@@ -288,6 +310,7 @@ namespace SpinningLog
 
 		private void AppNewMenu_Click(object sender, EventArgs e)
 		{
+			// open another application instance
 			Process.Start(Application.ExecutablePath, "--new");
 		}
 
@@ -311,9 +334,10 @@ namespace SpinningLog
 
 		private void FileCloseAllMenu_Click(object sender, EventArgs e)
 		{
-			Cursor.Current = Cursors.WaitCursor;
 			log_files.Clear();
 			merged_lines.Clear();
+
+			Cursor.Current = Cursors.WaitCursor;
 			webBrowser1.Document.GetElementById("merged").InnerHtml = "";
 		}
 
@@ -353,8 +377,6 @@ namespace SpinningLog
 		// scroll to bottom, and toggle live refresh
 		public void LiveMenu_Click(object sender, EventArgs e)
 		{
-			//HtmlElement div = webBrowser1.Document.GetElementById("merged");
-			//webBrowser1.Document.Window.ScrollTo(0, div.ScrollRectangle.Height);
 			HtmlElement latest = webBrowser1.Document.GetElementById("latest");
 			webBrowser1.Document.Window.ScrollTo(0, latest.ScrollRectangle.Bottom);
 		}
@@ -385,7 +407,8 @@ namespace SpinningLog
 			if (tag != null) {
 				Dictionary<string, object> macros = new Dictionary<string, object>()
 				{
-					{ "${FILENAME}", tag.Log.Name },
+					{ "${FILENAME}", tag.Log.Path },
+					{ "${PATH}", tag.Log.Path },
 					{ "${LINENO}",  1+tag.LineNo },
 					{ "${LINENO1}",  1+tag.LineNo },
 					{ "${LINENO0}",  tag.LineNo }
@@ -400,7 +423,7 @@ namespace SpinningLog
 			var tag = GetSelectedTag();
 			if (tag != null) {
 				Cursor.Current = Cursors.WaitCursor;
-				Process.Start("EXPLORER.EXE", "/select,\"" + tag.Log.Name + "\"");
+				Process.Start("EXPLORER.EXE", "/select,\"" + tag.Log.Path + "\"");
 			}
 		}
 
@@ -439,16 +462,16 @@ namespace SpinningLog
 		}
 
 		/// <summary>
-		/// Interface between main form and WebBrowser 
+		/// Interface between SpinningForm and WebBrowser 
 		/// </summary>
 		[ComVisible(true)]
 		public class ComOperation
 		{
-			SpinningMain main;
+			SpinningMain main_form;
 
-			public ComOperation(SpinningMain main)
+			public ComOperation(SpinningMain form)
 			{
-				this.main = main;
+				this.main_form = form;
 			}
 
 			// call from webBrowser1's script
@@ -456,11 +479,11 @@ namespace SpinningLog
 			{
 				switch (command) {
 				case "home":
-					main.ViewHomeMenu_Click(null, null);
+					main_form.ViewHomeMenu_Click(null, null);
 					break;
 				case "end":
 				case "live-toggle":
-					main.LiveMenu.Checked = !main.LiveMenu.Checked;
+					main_form.LiveMenu.Checked = !main_form.LiveMenu.Checked;
 					break;
 				case "select":
 					//MessageBox.Show("select:"+option);
@@ -482,7 +505,7 @@ namespace SpinningLog
 			public DataTag(LogLine line)
 			{
 				this.Log = line.File;
-				this.LineNo = line.LineNo;
+				this.LineNo = line.No;
 			}
 
 			public new string ToString()
@@ -534,18 +557,62 @@ namespace SpinningLog
 		/// <summary>
 		/// Log file information.
 		/// </summary>
-		class LogFile
+		public class LogFile
 		{
-			public string Name { get; set; }    /// <summary>path of log file</summary>
+			/// <summary>
+			/// Path of log file. Shortcut allowed.
+			/// </summary>
+			[XmlElement(ElementName = "path")]
+			public string Path { get; set; }	// TODO: symbolic link support
+			
+			/// <summary>
+			/// 
+			/// </summary>
+			[XmlIgnoreAttribute]
 			public string ID { get; private set; }
 			static int serial = 0;
 
+			/// <summary>
+			/// 
+			/// </summary>
+			[XmlIgnoreAttribute]
 			public Color Color { get; set; }
+			public string color
+			{
+				get { return ColorTranslator.ToHtml(this.Color); }
+				set { this.Color = ColorTranslator.FromHtml(value); }
+			}
+
+			/// <summary>
+			/// 
+			/// </summary>
+			[XmlIgnoreAttribute]
 			public TimeSpan TimeDifference { get; set; }
+			
+			/// <summary>
+			/// 
+			/// </summary>
+			[XmlIgnoreAttribute]
 			public Encoding Encoding { get; set; }
+			//[DefaultValueAttribute("utf-8")]
+			public string encoding
+			{
+				get { return Encoding.WebName; }
+				set { Encoding = Encoding.GetEncoding(value); }
+			}
+
 			public static Encoding DefaultEncoding { get; set; } = Encoding.UTF8;
 
+			/// <summary>
+			/// 
+			/// </summary>
+			[XmlIgnoreAttribute]
 			public long LastPosition { get; set; }
+			
+			/// <summary>
+			/// 
+			/// </summary>
+			[XmlIgnoreAttribute]
 			public int LineCount;
 
 			static Color[] auto_colors = {
@@ -555,9 +622,19 @@ namespace SpinningLog
 			};
 			static int color_index = 0;
 
+			// for serialize
+			public LogFile()
+			{
+				this.ID = string.Format("{0}", serial++);
+			}
+
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <param name="filename"></param>
 			public LogFile(string filename)
 			{
-				this.Name = filename;
+				this.Path = filename;
 				this.LastPosition = 0;
 				this.LineCount = 0;
 				this.ID = string.Format("{0}", serial++);
@@ -577,14 +654,13 @@ namespace SpinningLog
 			{
 				var lines = new Queue<LogLine>();
 				try {
-					string filename = GetTargetPath(this.Name);
+					string filename = GetTargetPath(this.Path);
 					using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 					using (var reader = new StreamReader(stream, this.Encoding)) {
-						stream.Position = this.LastPosition;
+						stream.Position = Math.Min(this.LastPosition, stream.Length);
 						while (!reader.EndOfStream) {
 							string s = reader.ReadLine();
 							var line = new LogLine(this, s);
-							line.LineNo = this.LineCount++;
 							lines.Enqueue(line);
 						}
 						this.LastPosition = stream.Position;
@@ -599,11 +675,13 @@ namespace SpinningLog
 			/// <summary>
 			/// Last time in this file
 			/// </summary>
+			[XmlIgnoreAttribute]
 			DateTime LastTime;
 
 			/// <summary>
 			/// 
 			/// </summary>
+			[XmlIgnoreAttribute]
 			Regex TimeTemplate;
 
 			static Regex[] templates = {
@@ -614,22 +692,22 @@ namespace SpinningLog
 			};
 
 			/// <summary>
-			/// 
+			/// Extract time from line text, or returns last time
 			/// </summary>
-			/// <param name="line"></param>
+			/// <param name="text">Line text</param>
 			/// <returns></returns>
-			public DateTime GetTimeFrom(string line)
+			public DateTime GetTimeFrom(string text)
 			{
 				if (TimeTemplate == null) {
 					foreach (var regex in templates) {
-						var match = regex.Match(line);
+						var match = regex.Match(text);
 						if (match.Success && DateTime.TryParse(match.Value, out LastTime)) {
 							TimeTemplate = regex;
 							break;
 						}
 					}
 				} else {
-					var match = TimeTemplate.Match(line);
+					var match = TimeTemplate.Match(text);
 					if (match.Success)
 						DateTime.TryParse(match.Value, out LastTime);
 				}
@@ -650,10 +728,10 @@ namespace SpinningLog
 		/// <summary>
 		/// A line of log
 		/// </summary>
-		class LogLine
+		public class LogLine
 		{
 			public LogFile File { get; set; }
-			public int LineNo { get; set; }
+			public int No { get; set; }
 			public string Text { get; set; }
 			public DateTime Time { get { return raw_time + File.TimeDifference; } }
 			DateTime raw_time;
@@ -663,6 +741,7 @@ namespace SpinningLog
 				this.File = file;
 				this.Text = text;
 				this.raw_time = file.GetTimeFrom(text);
+				this.No = file.LineCount++;
 			}
 		}
 
@@ -706,7 +785,7 @@ namespace SpinningLog
 					foreach (string filter in sett.log_filters)
 						AddLogFiles(Directory.GetFiles(link_to, filter, SearchOption.AllDirectories));
 				} else {
-					if (!log_files.Any(l => l.Name == path))
+					if (!log_files.Any(l => l.Path == path))
 						log_files.Add(new LogFile(path));
 				}
 			}
@@ -818,7 +897,7 @@ namespace SpinningLog
 				var tag = new DataTag(line);
 				html.Append("<label style=color:" + line.File.Color.Name
 				 + " data-tag=" + tag.ToString() + ">"
-				 + Path.GetFileName(line.File.Name) + "</label> "
+				 + Path.GetFileName(line.File.Path) + "</label> "
 				 + text + "\n");
 			}
 			return html.ToString();

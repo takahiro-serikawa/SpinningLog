@@ -46,6 +46,7 @@ label:hover {
 }
 
 label.selected {
+	background: #008;
 }
 
 .highlight { color: fuchsia; }
@@ -109,12 +110,12 @@ label.selected {
 *.debug #debug {
 	display: block;
 }
-
 </style>
 </head>
 
 <body>
-	<div id=merged><!-- log lines are inserted here as following pre -->
+	<div id=merged>
+	<!-- log lines are inserted here as following pre -->
 <pre><label style=color:red data-tag=1:23>sample.log</label> 2020-4-12 22:15:11.123 sample line
 <label class=selected style=color:orange data-tag=4:45>SMPL.LOG</label> 2020-4-12 22:17:53.567 === LOG ===
 <span class=blank>00:05:12 passed</span>
@@ -139,8 +140,10 @@ var tag;
 function GetLastSelected() { return tag }
 
 document.onmouseup = function (ev) {
+	let elem = document.getElementsByClassName('selected');
+	if (elem[0]) elem[0].setAttribute('class', '');
 	tag = ev.target.dataset.tag;
-	ev.target.setAttribute('className', 'selected');
+	ev.target.setAttribute('class', 'selected');
 	if (tag) window.external.ComCommand('select', tag)
 }
 

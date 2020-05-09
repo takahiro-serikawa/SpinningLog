@@ -26,12 +26,12 @@ namespace SpinningLog.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string last_open_files {
+        public string last_open_filesX {
             get {
-                return ((string)(this["last_open_files"]));
+                return ((string)(this["last_open_filesX"]));
             }
             set {
-                this["last_open_files"] = value;
+                this["last_open_filesX"] = value;
             }
         }
         
